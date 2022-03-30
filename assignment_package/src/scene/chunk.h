@@ -49,4 +49,5 @@ public:
     void setBlockAt(unsigned int x, unsigned int y, unsigned int z, BlockType t);
     void linkNeighbor(uPtr<Chunk>& neighbor, Direction dir);
     virtual void createVBOdata() override;
+    void bufferVBOdata(std::vector<glm::vec4> interleavedData, std::vector<int> indices);
 };

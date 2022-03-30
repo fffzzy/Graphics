@@ -154,22 +154,25 @@ void Chunk::createVBOdata() {
         interleavedVector.push_back(col[i]);
     }
 
-    this->m_count = idx.size();
+    this->bufferVBOdata(interleavedVector, idx);
+}
+
+void Chunk::bufferVBOdata(std::vector<glm::vec4> interleavedData, std::vector<int> indices) {
+    this->m_count = indices.size();
 
     generatePos();
     mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufPos);
-    mp_context->glBufferData(GL_ARRAY_BUFFER, interleavedVector.size() * sizeof(glm::vec4), interleavedVector.data(), GL_STATIC_DRAW);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, interleavedData.size() * sizeof(glm::vec4), interleavedData.data(), GL_STATIC_DRAW);
 
     generateNor();
     mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufNor);
-    mp_context->glBufferData(GL_ARRAY_BUFFER, interleavedVector.size() * sizeof(glm::vec4), interleavedVector.data(), GL_STATIC_DRAW);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, interleavedData.size() * sizeof(glm::vec4), interleavedData.data(), GL_STATIC_DRAW);
 
     generateCol();
     mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufCol);
-    mp_context->glBufferData(GL_ARRAY_BUFFER, interleavedVector.size() * sizeof(glm::vec4), interleavedVector.data(), GL_STATIC_DRAW);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, interleavedData.size() * sizeof(glm::vec4), interleavedData.data(), GL_STATIC_DRAW);
 
     generateIdx();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx);
-    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(GLuint), idx.data(), GL_STATIC_DRAW);
-
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 }

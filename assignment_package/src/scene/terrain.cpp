@@ -117,6 +117,11 @@ void Terrain::setBlockAt(int x, int y, int z, BlockType t)
 }
 
 Chunk* Terrain::instantiateChunkAt(int x, int z) {
+    // Turn coordinates into multiples of 16
+    x = 16 * glm::floor(x / 16.f);
+    z = 16 * glm::floor(z / 16.f);
+
+    // Instantiate chunk
     uPtr<Chunk> chunk = mkU<Chunk>(this->mp_context, x, z);
     Chunk *cPtr = chunk.get();
     m_chunks[toKey(x, z)] = move(chunk);
@@ -152,6 +157,27 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
             chunk->createVBOdata();
             shaderProgram->drawInterleaved(*chunk.get());
         }
+    }
+}
+
+void Terrain::expandTerrain(int x, int z) {
+    if (!hasChunkAt(x + 16, z)) {
+        instantiateChunkAt(x + 16, z);
+
+    } else if (!hasChunkAt(x, z + 16)) {
+        instantiateChunkAt(x, z + 16);
+
+    } else if (!hasChunkAt(x + 16, z + 16)) {
+        instantiateChunkAt(x + 16, z + 16);
+
+    } else if (!hasChunkAt(x - 16, z)) {
+        instantiateChunkAt(x - 16, z);
+
+    } else if (!hasChunkAt(x, z - 16)) {
+        instantiateChunkAt(x, z - 16);
+
+    } else if (!hasChunkAt(x - 16, z - 16)) {
+        instantiateChunkAt(x - 16, z - 16);
     }
 }
 
