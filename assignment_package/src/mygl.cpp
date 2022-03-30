@@ -140,7 +140,7 @@ void MyGL::renderTerrain() {
 
 
 void MyGL::keyPressEvent(QKeyEvent *e) {
-    float amount = 0.5f;
+    float amount = 2.f;
     if(e->modifiers() & Qt::ShiftModifier){
         amount = 10.0f;
     }
