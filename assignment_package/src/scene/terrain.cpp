@@ -228,3 +228,24 @@ void Terrain::CreateTestScene()
         setBlockAt(32, y, 32, GRASS);
     }
 }
+
+void Terrain::CreateTestScene2()
+{
+    // TODO: DELETE THIS LINE WHEN YOU DELETE m_geomCube!
+    m_geomCube.createVBOdata();
+
+    // Create the Chunks that will
+    // store the blocks for our
+    // initial world space
+    for(int x = 0; x < 64; x += 16) {
+        for(int z = 0; z < 64; z += 16) {
+            instantiateChunkAt(x, z);
+        }
+    }
+    // Tell our existing terrain set that
+    // the "generated terrain zone" at (0,0)
+    // now exists.
+    m_generatedTerrain.insert(toKey(0, 0));
+
+
+}
