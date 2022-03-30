@@ -8,9 +8,45 @@ Chunk::Chunk(OpenGLContext* mp_context, int Xoffset, int Zoffset) : Drawable(mp_
 
 // Does bounds checking with at()
 BlockType Chunk::getBlockAt(unsigned int x, unsigned int y, unsigned int z) const {
-    if (x + 16 * y + 16 * 256 * z > m_blocks.size() || x + 16 * y + 16 * 256 * z < 0) {
-        return EMPTY;
+    // Check for limits
+    if ((int) x < 0) {
+        // Check for no neighbor
+        if (m_neighbors.at(XNEG) == nullptr) {
+            return EMPTY;
+        }
+        return m_neighbors.at(XNEG)->getBlockAt(16 + x, y, z);
+    } else if ((int) x >= 16) {
+        // Check for no neighbor
+        if (m_neighbors.at(XPOS) == nullptr) {
+            return EMPTY;
+        }
+        return m_neighbors.at(XPOS)->getBlockAt(x - 16, y, z);
+    } else if ((int) y < 0) {
+        // Check for no neighbor
+        if (m_neighbors.at(YNEG) == nullptr) {
+            return EMPTY;
+        }
+        return m_neighbors.at(YNEG)->getBlockAt(x, 256 + y, z);
+    } else if ((int) y >= 256) {
+        // Check for no neighbor
+        if (m_neighbors.at(YPOS) == nullptr) {
+            return EMPTY;
+        }
+        return m_neighbors.at(YPOS)->getBlockAt(x, y - 256, z);
+    } else if ((int) z < 0) {
+        // Check for no neighbor
+        if (m_neighbors.at(ZNEG) == nullptr) {
+            return EMPTY;
+        }
+        return m_neighbors.at(ZNEG)->getBlockAt(x, y, 16 + z);
+    } else if ((int) z >= 16) {
+        // Check for no neighbor
+        if (m_neighbors.at(ZPOS) == nullptr) {
+            return EMPTY;
+        }
+        return m_neighbors.at(ZPOS)->getBlockAt(x, y, z - 16);
     }
+
     return m_blocks.at(x + 16 * y + 16 * 256 * z);
 }
 
