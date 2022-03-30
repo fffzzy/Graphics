@@ -255,17 +255,17 @@ void ShaderProgram::drawInterleaved(Drawable &d)
     // (referred to by attrPos) with that VBO
     if (attrPos != -1 && d.bindPos()) {
         context->glEnableVertexAttribArray(attrPos);
-        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 2 * sizeof(glm::vec4), (void*)0);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4), (void*)0);
     }
 
-//    if (attrNor != -1 && d.bindNor()) {
-//        context->glEnableVertexAttribArray(attrNor);
-//        context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 0, NULL);
-//    }
+    if (attrNor != -1 && d.bindNor()) {
+        context->glEnableVertexAttribArray(attrNor);
+        context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4), (void*)sizeof(glm::vec4));
+    }
 
     if (attrCol != -1 && d.bindCol()) {
         context->glEnableVertexAttribArray(attrCol);
-        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 2 * sizeof(glm::vec4), (void*)sizeof(glm::vec4));
+        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4), (void*) (2 * sizeof(glm::vec4)));
     }
 
     // Bind the index buffer and then draw shapes from it.
@@ -274,7 +274,7 @@ void ShaderProgram::drawInterleaved(Drawable &d)
     context->glDrawElements(d.drawMode(), d.elemCount(), GL_UNSIGNED_INT, 0);
 
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
-    //if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
+    if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
     if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
 
     context->printGLErrorLog();

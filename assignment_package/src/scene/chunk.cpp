@@ -85,7 +85,7 @@ void Chunk::linkNeighbor(uPtr<Chunk> &neighbor, Direction dir) {
 void Chunk::createVBOdata() {
     // Create stores for all the square faces to be drawn
     std::vector<glm::vec4> pos = std::vector<glm::vec4>();
-    std::vector<glm::vec3> nor = std::vector<glm::vec3>();
+    std::vector<glm::vec4> nor = std::vector<glm::vec4>();
     std::vector<glm::vec4> col = std::vector<glm::vec4>();
     std::vector<int> idx = std::vector<int>();
 
@@ -109,7 +109,7 @@ void Chunk::createVBOdata() {
                         if (neighborType == EMPTY) {
                             for (VertexData VD : neighborFace.vertices) {
                                 pos.push_back(glm::vec4(currWorldPos, 0.f) + VD.pos);
-                                nor.push_back(neighborFace.directionVec);
+                                nor.push_back(glm::vec4(neighborFace.directionVec, 0.f));
 
                                 switch(btAtCurrPos) {
                                     case GRASS:
@@ -150,6 +150,7 @@ void Chunk::createVBOdata() {
 
     for (int i = 0; i < pos.size(); i++) {
         interleavedVector.push_back(pos[i]);
+        interleavedVector.push_back(nor[i]);
         interleavedVector.push_back(col[i]);
     }
 
@@ -159,6 +160,9 @@ void Chunk::createVBOdata() {
     mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufPos);
     mp_context->glBufferData(GL_ARRAY_BUFFER, interleavedVector.size() * sizeof(glm::vec4), interleavedVector.data(), GL_STATIC_DRAW);
 
+    generateNor();
+    mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufNor);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, interleavedVector.size() * sizeof(glm::vec4), interleavedVector.data(), GL_STATIC_DRAW);
 
     generateCol();
     mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufCol);
