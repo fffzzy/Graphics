@@ -134,12 +134,12 @@ void MyGL::paintGL() {
 // terrain that surround the player (refer to Terrain::m_generatedTerrain
 // for more info)
 void MyGL::renderTerrain() {
-    m_terrain.draw(0, 64, 0, 64, &m_progInstanced);
+    m_terrain.draw(0, 64, 0, 64, &m_progFlat);
 }
 
 
 void MyGL::keyPressEvent(QKeyEvent *e) {
-    float amount = 2.0f;
+    float amount = 0.5f;
     if(e->modifiers() & Qt::ShiftModifier){
         amount = 10.0f;
     }
