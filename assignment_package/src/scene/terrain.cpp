@@ -153,30 +153,47 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
 
     for(int x = minX; x < maxX; x += 16) {
         for(int z = minZ; z < maxZ; z += 16) {
-            const uPtr<Chunk> &chunk = getChunkAt(x, z);
-            chunk->createVBOdata();
-            shaderProgram->drawInterleaved(*chunk.get());
+            if (hasChunkAt(x, z)) {
+                const uPtr<Chunk> &chunk = getChunkAt(x, z);
+                chunk->createVBOdata();
+                shaderProgram->drawInterleaved(*chunk.get());
+            }
         }
     }
 }
 
 void Terrain::expandTerrain(int x, int z) {
+    if (!hasChunkAt(x, z)) {
+        instantiateChunkAt(x, z);
+
+    }
+
     if (!hasChunkAt(x + 16, z)) {
         instantiateChunkAt(x + 16, z);
 
-    } else if (!hasChunkAt(x, z + 16)) {
+    }
+
+    if (!hasChunkAt(x, z + 16)) {
         instantiateChunkAt(x, z + 16);
 
-    } else if (!hasChunkAt(x + 16, z + 16)) {
+    }
+
+    if (!hasChunkAt(x + 16, z + 16)) {
         instantiateChunkAt(x + 16, z + 16);
 
-    } else if (!hasChunkAt(x - 16, z)) {
+    }
+
+    if (!hasChunkAt(x - 16, z)) {
         instantiateChunkAt(x - 16, z);
 
-    } else if (!hasChunkAt(x, z - 16)) {
+    }
+
+    if (!hasChunkAt(x, z - 16)) {
         instantiateChunkAt(x, z - 16);
 
-    } else if (!hasChunkAt(x - 16, z - 16)) {
+    }
+
+    if (!hasChunkAt(x - 16, z - 16)) {
         instantiateChunkAt(x - 16, z - 16);
     }
 }
