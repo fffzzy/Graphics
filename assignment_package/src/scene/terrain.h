@@ -89,4 +89,5 @@ public:
     // see when the base code is run.
     void CreateTestScene();
     void CreateTestScene2();
+    void CreateTestScene3();
 };

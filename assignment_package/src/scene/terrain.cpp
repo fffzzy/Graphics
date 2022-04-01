@@ -2,6 +2,8 @@
 #include "cube.h"
 #include <stdexcept>
 #include <iostream>
+#include <math.h>
+#include <algorithm>
 
 Terrain::Terrain(OpenGLContext *context)
     : m_chunks(), m_generatedTerrain(), m_geomCube(context), mp_context(context)
@@ -229,6 +231,105 @@ void Terrain::CreateTestScene()
     }
 }
 
+
+glm::vec2 random2( glm::vec2 p ) {
+    return glm::fract(glm::sin(glm::vec2(glm::dot(p, glm::vec2(127.1, 311.7)),
+                 glm::dot(p, glm::vec2(269.5,183.3))))
+                 * (float)43758.5453);
+}
+
+float surflet(glm::vec2 P, glm::vec2 gridPoint) {
+    // Compute falloff function by converting linear distance to a polynomial
+    float distX = abs(P.x - gridPoint.x);
+    float distY = abs(P.y - gridPoint.y);
+    float tX = 1 - 6 * pow(distX, 5.f) + 15 * pow(distX, 4.f) - 10 * pow(distX, 3.f);
+    float tY = 1 - 6 * pow(distY, 5.f) + 15 * pow(distY, 4.f) - 10 * pow(distY, 3.f);
+    // Get the random vector for the grid point
+    glm::vec2 gradient = 2.f * random2(gridPoint) - glm::vec2(1.f);
+    // Get the vector from the grid point to P
+    glm::vec2 diff = P - gridPoint;
+    // Get the value of our height field by dotting grid->P with our gradient
+    float height = glm::dot(diff, gradient);
+    // Scale our height field (i.e. reduce it) by our polynomial falloff function
+    return height * tX * tY;
+}
+
+float perlinNoise(glm::vec2 uv) {
+    float surfletSum = 0.f;
+    // Iterate over the four integer corners surrounding uv
+    for(int dx = 0; dx <= 1; ++dx) {
+        for(int dy = 0; dy <= 1; ++dy) {
+            surfletSum += surflet(uv, glm::floor(uv) + glm::vec2(dx, dy));
+        }
+    }
+    return surfletSum;
+}
+
+//float noise1D(int x) {
+//    x = (x << 13) ^ x;
+//    return 5*((1 - (x * (x * x * 15731 + 789221)
+//            + 1376312589) & 0x7fffffff)
+//            / 10737741824.0);
+//}
+
+
+float noise1D(int x) {
+    double intPart, fractPart;
+    fractPart = std::modf(sin(x*127.1) *
+            43758.5453, &intPart);
+    return fractPart;
+}
+
+
+
+float interpNoise1D(float x) {
+    int intX = int(floor(x));
+    float fractX = x - intX;
+
+    float v1 = noise1D(intX);
+    float v2 = noise1D(intX+1);
+    return v1 + fractX*(v2-v1);
+}
+
+float fbm(float x) {
+    float total = 0;
+    float persistence = 0.5f;
+    int octaves = 8;
+    float freq = 2.f;
+    float amp = 0.5f;
+    for(int i = 1; i <= octaves; i++) {
+        total += interpNoise1D(x * freq) * amp;
+
+        freq *= 2.f;
+        amp *= persistence;
+    }
+    return total;
+}
+
+float WorleyDist(glm::vec2 uv) {
+    float grid = 4.0;
+    uv *= grid; // Now the space is 10x10 instead of 1x1. Change this to any number you want.
+    glm::vec2 uvInt = glm::floor(uv);
+    glm::vec2 uvFract = glm::fract(uv);
+
+    float minDist = 1000; // Minimuxm distance initialized to max.
+    glm::vec2 minPoint = glm::vec2(200,200);
+    for(int y = -1; y <= 1; ++y) {
+        for(int x = -1; x <= 1; ++x) {
+            glm::vec2 neighbor = glm::vec2(float(x), float(y)); // Direction in which neighbor cell lies
+            glm::vec2 point = random2(uvInt + neighbor); // Get the Voronoi centerpoint for the neighboring cell
+            glm::vec2 diff = neighbor + point - uvFract; // Distance between fragment coord and neighbor’s Voronoi point
+            float dist = glm::length(diff);
+            if(dist < minDist){
+                minPoint = glm::vec2((uv+diff)/grid);
+            }
+            minDist = std::min(minDist, dist);
+        }
+    }
+    return minDist;
+}
+
+
 void Terrain::CreateTestScene2()
 {
     // TODO: DELETE THIS LINE WHEN YOU DELETE m_geomCube!
@@ -247,5 +348,64 @@ void Terrain::CreateTestScene2()
     // now exists.
     m_generatedTerrain.insert(toKey(0, 0));
 
+    // Create the basic terrain floor
+    for(int x = 0; x < 64; ++x) {
+        for(int z = 0; z < 64; ++z) {
+            float p = (perlinNoise(glm::vec2(x/16.0 ,z/16.0) ) + 0.5);
+            float r = fbm(p);
+            float y = -200*r + 80;
+            y = std::max(std::min(
+                             y,50.f),0.f);
+            std::cout << y << ", ";
+            int h = y + 128;
+            for(int i = 0; i < 3; i++){
+                setBlockAt(x, h-i, z, STONE);
+            }
+
+        }
+        std::cout << "\n";
+    }
+
+}
+
+void Terrain::CreateTestScene3()
+{
+    // TODO: DELETE THIS LINE WHEN YOU DELETE m_geomCube!
+    m_geomCube.createVBOdata();
+
+    // Create the Chunks that will
+    // store the blocks for our
+    // initial world space
+    for(int x = 0; x < 64; x += 16) {
+        for(int z = 0; z < 64; z += 16) {
+            instantiateChunkAt(x, z);
+        }
+    }
+    // Tell our existing terrain set that
+    // the "generated terrain zone" at (0,0)
+    // now exists.
+    m_generatedTerrain.insert(toKey(0, 0));
+
+    // Create the basic terrain floor
+    for(int x = 0; x < 64; ++x) {
+        for(int z = 0; z < 64; ++z) {
+            float w = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
+            float y = -15*w + 15;
+            y = std::max(std::min(
+                             y,15.f),0.f);
+            std::cout << y << ", ";
+            int h = y + 128;
+            for(int i = 0; i < 3; i++){
+                if(i == 0){
+                    setBlockAt(x, h, z, GRASS);
+                }else{
+                    setBlockAt(x, h-i, z, DIRT);
+                }
+
+            }
+
+        }
+        std::cout << "\n";
+    }
 
 }

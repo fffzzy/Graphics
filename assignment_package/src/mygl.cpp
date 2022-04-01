@@ -71,7 +71,8 @@ void MyGL::initializeGL()
     // using multiple VAOs, we can just bind one once.
     glBindVertexArray(vao);
 
-    m_terrain.CreateTestScene();
+    //m_terrain.CreateTestScene();
+    m_terrain.CreateTestScene3();
 }
 
 void MyGL::resizeGL(int w, int h) {
