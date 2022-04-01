@@ -1,6 +1,8 @@
 #pragma once
 #include "smartpointerhelp.h"
 #include "glm_includes.h"
+#include "drawable.h"
+#include "chunkhelpers.h"
 #include <array>
 #include <unordered_map>
 #include <cstddef>
@@ -8,20 +10,7 @@
 
 //using namespace std;
 
-// C++ 11 allows us to define the size of an enum. This lets us use only one byte
-// of memory to store our different block types. By default, the size of a C++ enum
-// is that of an int (so, usually four bytes). This *does* limit us to only 256 different
-// block types, but in the scope of this project we'll never get anywhere near that many.
-enum BlockType : unsigned char
-{
-    EMPTY, GRASS, DIRT, STONE, WATER
-};
 
-// The six cardinal directions in 3D space
-enum Direction : unsigned char
-{
-    XPOS, XNEG, YPOS, YNEG, ZPOS, ZNEG
-};
 
 // Lets us use any enum class as the key of a
 // std::unordered_map
@@ -40,7 +29,7 @@ struct EnumHash {
 // to render the world block by block.
 
 // TODO have Chunk inherit from Drawable
-class Chunk {
+class Chunk : public Drawable {
 private:
     // All of the blocks contained within this Chunk
     std::array<BlockType, 65536> m_blocks;
@@ -51,9 +40,12 @@ private:
     std::unordered_map<Direction, Chunk*, EnumHash> m_neighbors;
 
 public:
-    Chunk();
+    explicit Chunk(OpenGLContext* mp_context);
     BlockType getBlockAt(unsigned int x, unsigned int y, unsigned int z) const;
     BlockType getBlockAt(int x, int y, int z) const;
+    BlockType getBlockAt(glm::vec3 pos) const;
     void setBlockAt(unsigned int x, unsigned int y, unsigned int z, BlockType t);
     void linkNeighbor(uPtr<Chunk>& neighbor, Direction dir);
+    virtual void createVBOdata() override;
+    void bufferVBOdata(std::vector<glm::vec4> interleavedData, std::vector<int> indices);
 };

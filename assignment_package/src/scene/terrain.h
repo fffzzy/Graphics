@@ -50,7 +50,6 @@ private:
     // for every non-EMPTY block within its Chunks. This is horribly
     // inefficient, and will cause your game to run very slowly until
     // milestone 1's Chunk VBO setup is completed.
-    Cube m_geomCube;
 
     OpenGLContext* mp_context;
 
@@ -84,6 +83,11 @@ public:
     // described by the min and max coords, using the provided
     // ShaderProgram
     void draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram);
+
+    // Expands terrain by a chunk if the player is 16 blocks away from the edge of the current terrain
+    void expandTerrain(int x, int z);
+
+    void setBlock(int x, int z);
 
     // Initializes the Chunks that store the 64 x 256 x 64 block scene you
     // see when the base code is run.

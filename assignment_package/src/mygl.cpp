@@ -10,7 +10,8 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_progInstanced(this),
-      m_terrain(this), m_player(glm::vec3(48.f, 129.f, 48.f), m_terrain), accumulativeRotationOnRight(0.f)
+      m_terrain(this), m_player(glm::vec3(32.f, 129.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f)
+
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -94,6 +95,7 @@ void MyGL::resizeGL(int w, int h) {
 // all per-frame actions here, such as performing physics updates on all
 // entities in the scene.
 void MyGL::tick() {
+    this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
     long long currframe = QDateTime::currentMSecsSinceEpoch();
     m_player.tick(currframe - lastFrame, m_inputs);
@@ -122,7 +124,10 @@ void MyGL::paintGL() {
 
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
+    m_progLambert.setModelMatrix(glm::mat4());
     m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
+
+    this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
 
     renderTerrain();
 
@@ -132,17 +137,21 @@ void MyGL::paintGL() {
     m_progFlat.draw(m_worldAxes);
     glEnable(GL_DEPTH_TEST);
 }
-
 // TODO: Change this so it renders the nine zones of generated
 // terrain that surround the player (refer to Terrain::m_generatedTerrain
 // for more info)
 void MyGL::renderTerrain() {
-    m_terrain.draw(0, 64, 0, 64, &m_progInstanced);
+    int xmin = 16 * (glm::floor(this->m_player.mcr_position.x / 16.f) - 1);
+    int xmax = 16 * (glm::floor(this->m_player.mcr_position.x / 16.f) + 2);
+
+    int zmin = 16 * (glm::floor(this->m_player.mcr_position.z / 16.f) - 1);
+    int zmax = 16 * (glm::floor(this->m_player.mcr_position.z / 16.f) + 2);
+    m_terrain.draw(xmin, xmax, zmin, zmax, &m_progLambert);
 }
 
 
 void MyGL::keyPressEvent(QKeyEvent *e) {
-    float amount = 2.0f;
+    float amount = 2.f;
     if(e->modifiers() & Qt::ShiftModifier){
         amount = 10.0f;
     }
