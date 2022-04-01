@@ -1,7 +1,7 @@
 #include "chunk.h"
 
 
-Chunk::Chunk(OpenGLContext* mp_context, int Xoffset, int Zoffset) : Drawable(mp_context), m_Xoffset(Xoffset), m_Zoffset(Zoffset), m_blocks(), m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}}
+Chunk::Chunk(OpenGLContext* mp_context) : Drawable(mp_context), m_blocks(), m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}}
 {
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
@@ -99,7 +99,7 @@ void Chunk::createVBOdata() {
 
                 if (btAtCurrPos != EMPTY) {
                     glm::vec3 currPos = glm::vec3(x, y, z);
-                    glm::vec3 currWorldPos = glm::vec3(x+m_Xoffset, y, z+m_Zoffset);
+                    glm::vec3 currWorldPos = glm::vec3(x, y, z);
 
                     // Look at all neighbors and add appropriate faces
                     for (BlockFace neighborFace : adjacentFaces) {

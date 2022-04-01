@@ -38,11 +38,9 @@ private:
     // a key for this map.
     // These allow us to properly determine
     std::unordered_map<Direction, Chunk*, EnumHash> m_neighbors;
-    int m_Xoffset;
-    int m_Zoffset;
 
 public:
-    explicit Chunk(OpenGLContext* mp_context, int x, int z);
+    explicit Chunk(OpenGLContext* mp_context);
     BlockType getBlockAt(unsigned int x, unsigned int y, unsigned int z) const;
     BlockType getBlockAt(int x, int y, int z) const;
     BlockType getBlockAt(glm::vec3 pos) const;
