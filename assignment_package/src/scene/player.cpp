@@ -64,14 +64,14 @@ void Player::tick(float dT, InputBundle &input) {
     computePhysics(dT, mcr_terrain);
 }
 
+void Player::toggleFlight() {
+    isFlight = !isFlight;
+}
+
 void Player::processInputs(InputBundle &inputs) {
     // TODO: Update the Player's velocity and acceleration based on the
     // state of the inputs.
     m_camera.RecomputeAttributes(inputs.mouseX, inputs.mouseY);
-
-    if (inputs.fPressed) {
-        isFlight = !isFlight;
-    }
 
     if (isFlight) {
         if (inputs.wPressed) {

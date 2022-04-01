@@ -168,7 +168,7 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = true;
     } else if (e->key() == Qt::Key_F) {
-        m_inputs.fPressed = true;
+        m_player.toggleFlight();
     }
 }
 
@@ -187,15 +187,13 @@ void MyGL::keyReleaseEvent(QKeyEvent *e) {
         m_inputs.qPressed = false;
     } else if (e->key() == Qt::Key_Space) {
         m_inputs.spacePressed = false;
-    } else if (e->key() == Qt::Key_F) {
-        m_inputs.fPressed = false;
     }
 }
 
 void MyGL::mouseMoveEvent(QMouseEvent *e) {
     // TODO
-    m_inputs.mouseX = e->position()->x();
-    m_inputs.mouseY = e->position()->y();
+    m_inputs.mouseX = e->position().x();
+    m_inputs.mouseY = e->position().y();
 }
 
 void MyGL::mousePressEvent(QMouseEvent *e) {

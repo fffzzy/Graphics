@@ -27,6 +27,7 @@ public:
     void addBlock();
     void removeBlock();
     void moveWithCollisions(glm::vec3 move);
+    void toggleFlight();
 
     Player(glm::vec3 pos, Terrain &terrain);
     virtual ~Player() override;

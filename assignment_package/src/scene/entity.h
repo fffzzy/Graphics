@@ -3,13 +3,13 @@
 
 struct InputBundle {
     bool wPressed, aPressed, sPressed, dPressed;
-    bool spacePressed, fPressed, qPressed, ePressed, leftClick, rightClick;
+    bool spacePressed, qPressed, ePressed;
     float mouseX, mouseY;
 
     InputBundle()
         : wPressed(false), aPressed(false), sPressed(false),
-          dPressed(false), spacePressed(false), fPressed(false),
-          qPressed (false), ePressed(false), leftClick(false), rightClick(false),
+          dPressed(false), spacePressed(false),
+          qPressed (false), ePressed(false),
           mouseX(0.f), mouseY(0.f)
     {}
 };
