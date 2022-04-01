@@ -1,43 +1,30 @@
 #pragma once
 
-#include <la.h>
+#include "la.h"
+#include "scene/entity.h"
 
 //A perspective projection camera
 //Receives its eye position and reference point from the scene XML file
-class Camera
-{
+class Camera : public Entity {
+private:
+    float m_fovy;
+    unsigned int m_width, m_height;  // Screen dimensions
+    float m_near_clip;  // Near clip plane distance
+    float m_far_clip;  // Far clip plane distance
+    float m_aspect;    // Aspect ratio
+
 public:
-    Camera();
-    Camera(unsigned int w, unsigned int h);
-    Camera(unsigned int w, unsigned int h, const glm::vec3 &e, const glm::vec3 &r, const glm::vec3 &worldUp);
+    Camera(glm::vec3 pos);
+    Camera(unsigned int w, unsigned int h, glm::vec3 pos);
     Camera(const Camera &c);
+    void setWidthHeight(unsigned int w, unsigned int h);
 
-    float fovy;
-    unsigned int width, height;  // Screen dimensions
-    float near_clip;  // Near clip plane distance
-    float far_clip;  // Far clip plane distance
+    void tick(float dT, InputBundle &input) override;
 
-    //Computed attributes
-    float aspect;
-
-    glm::vec3 eye,      //The position of the camera in world space
-              ref,      //The point in world space towards which the camera is pointing
-              look,     //The normalized vector from eye to ref. Is also known as the camera's "forward" vector.
-              up,       //The normalized vector pointing upwards IN CAMERA SPACE. This vector is perpendicular to LOOK and RIGHT.
-              right,    //The normalized vector pointing rightwards IN CAMERA SPACE. It is perpendicular to UP and LOOK.
-              world_up, //The normalized vector pointing upwards IN WORLD SPACE. This is primarily used for computing the camera's initial UP vector.
-              V,        //Represents the vertical component of the plane of the viewing frustum that passes through the camera's reference point. Used in Camera::Raycast.
-              H;        //Represents the horizontal component of the plane of the viewing frustum that passes through the camera's reference point. Used in Camera::Raycast.
-
-    glm::mat4 getViewProj();
-
-    void RecomputeAttributes();
-
-    void RotateAboutUp(float deg);
-    void RotateAboutRight(float deg);
-
-    void TranslateAlongLook(float amt);
-    void TranslateAlongRight(float amt);
-    void TranslateAlongUp(float amt);
-    void TranslateAlongWorldUp(float amt);
+    glm::mat4 getViewProj() const;
+    glm::vec3 getForward() const;
+    float theta;
+    float phi;
+    float zoom;
+    void RecomputeAttributes(int, int);
 };
