@@ -136,14 +136,27 @@ void Player::moveWithCollisions(glm::vec3 move) {
     float out_dist = -1.f;
     glm::ivec3 out_blockHit = glm::ivec3();
 
-    for (int i = 0; i < 3; i++) {
-        //(0,1,0)
-        glm::vec3 detectDir = glm::vec3();
-        detectDir[i] = move[i];
-        bool isBlock = gridMarch(m_position, detectDir, mcr_terrain, &out_dist, &out_blockHit);
-        if (isBlock) {
-            if (out_dist < 0.01f) {
-                move[i] = 0;
+    auto p1 = glm::vec3(m_position.x + 0.5, m_position.y, m_position.z - 0.5);
+    auto p2 = glm::vec3(m_position.x - 0.5, m_position.y, m_position.z - 0.5);
+    auto p3 = glm::vec3(m_position.x + 0.5, m_position.y, m_position.z + 0.5);
+    auto p4 = glm::vec3(m_position.x - 0.5, m_position.y, m_position.z + 0.5);
+    auto p5 = glm::vec3(m_position.x + 0.5, m_position.y + 1, m_position.z - 0.5);
+    auto p6 = glm::vec3(m_position.x - 0.5, m_position.y + 1, m_position.z - 0.5);
+    auto p7 = glm::vec3(m_position.x + 0.5, m_position.y + 1, m_position.z + 0.5);
+    auto p8 = glm::vec3(m_position.x - 0.5, m_position.y + 1, m_position.z + 0.5);
+    auto p9 = glm::vec3(m_position.x + 0.5, m_position.y + 2, m_position.z - 0.5);
+    auto p10 = glm::vec3(m_position.x - 0.5, m_position.y + 2, m_position.z - 0.5);
+    auto p11 = glm::vec3(m_position.x + 0.5, m_position.y + 2, m_position.z + 0.5);
+    auto p12 = glm::vec3(m_position.x - 0.5, m_position.y + 2, m_position.z + 0.5);
+    std::vector<glm::vec3> box = {p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12};
+    for (int j = 0; j < 12; j++) {
+        for (int i = 0; i < 3; i++) {
+            //(0,1,0), (1, 0, 0), (0, 0, 1)
+            glm::vec3 detectDir = glm::vec3();
+            detectDir[i] = move[i];
+            bool isBlock = gridMarch(box[j], detectDir, mcr_terrain, &out_dist, &out_blockHit);
+            if (isBlock) {
+                move[i] = std::min(move[i], out_dist);
             }
         }
     }

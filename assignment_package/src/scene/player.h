@@ -3,6 +3,8 @@
 #include "camera.h"
 #include "terrain.h"
 
+#include <vector>
+
 class Player : public Entity {
 private:
     glm::vec3 m_velocity, m_acceleration;
