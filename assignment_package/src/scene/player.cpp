@@ -71,28 +71,28 @@ void Player::toggleFlight() {
 void Player::processInputs(InputBundle &inputs) {
     // TODO: Update the Player's velocity and acceleration based on the
     // state of the inputs.
-    m_camera.RecomputeAttributes(inputs.mouseX, inputs.mouseY);
+//    m_camera.RecomputeAttributes(inputs.mouseX, inputs.mouseY);
 
     if (isFlight) {
         if (inputs.wPressed) {
-            m_acceleration.z = acceleration;
+            m_acceleration = acceleration * m_forward;
         } else if (inputs.sPressed) {
-            m_acceleration.z = -acceleration;
+            m_acceleration = -acceleration * m_forward;
         } else if (inputs.aPressed) {
-            m_acceleration.x = acceleration;
+            m_acceleration = -acceleration * m_right;
         } else if (inputs.dPressed) {
-            m_acceleration.x = -acceleration;
+            m_acceleration = acceleration * m_right;
         } else if (inputs.qPressed) {
-            m_acceleration.y = acceleration;
+            m_acceleration = acceleration * m_up;
         } else if (inputs.ePressed) {
-            m_acceleration.y = -acceleration;
+            m_acceleration = -acceleration * m_up;
         } else {
             m_acceleration = glm::vec3(0.f, 0.f, 0.f);
         }
     } else {
         BlockType underPlayer = mcr_terrain.getBlockAt(m_position.x, m_position.y - 0.5, m_position.z);
         if (underPlayer == EMPTY) {
-            m_acceleration.y = -g;
+            m_acceleration = -g * m_up;
         } else {
             m_acceleration.y = 0;
             if (inputs.spacePressed) {
@@ -102,13 +102,13 @@ void Player::processInputs(InputBundle &inputs) {
             }
         }
         if (inputs.wPressed) {
-            m_acceleration.z = acceleration;
+            m_acceleration = acceleration * m_forward;
         } else if (inputs.sPressed) {
-            m_acceleration.z = -acceleration;
+            m_acceleration = -acceleration * m_forward;
         } else if (inputs.aPressed) {
-            m_acceleration.x = acceleration;
+            m_acceleration = -acceleration * m_right;
         } else if (inputs.dPressed) {
-            m_acceleration.x = -acceleration;
+            m_acceleration = acceleration * m_right;
         } else {
             m_acceleration.x = 0;
             m_acceleration.z = 0;
@@ -122,9 +122,7 @@ void Player::computePhysics(float dT, Terrain &terrain) {
     // and velocity, and also perform collision detection.
     m_velocity *= 1 - friction;
     m_velocity += m_acceleration * dT;
-    glm::vec3 move = glm::vec3(glm::rotate(glm::mat4(), glm::radians(m_camera.theta), glm::vec3(0.f, 1.f, 0.f))
-                                          * glm::rotate(glm::mat4(), glm::radians(m_camera.phi), glm::vec3(1.f, 0.f, 0.f))
-                                          * glm::vec4((m_velocity * dT * 0.00003f), 1.f));
+    glm::vec3 move = m_velocity * dT * 0.00003f;
     if (isFlight) {
         moveAlongVector(move);
     } else {
@@ -156,7 +154,7 @@ void Player::moveWithCollisions(glm::vec3 move) {
             detectDir[i] = move[i];
             bool isBlock = gridMarch(box[j], detectDir, mcr_terrain, &out_dist, &out_blockHit);
             if (isBlock) {
-                move[i] = std::min(move[i], out_dist);
+                move[i] = std::min(move[i], out_dist) - 0.001f;
             }
         }
     }

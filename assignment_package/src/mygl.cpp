@@ -10,7 +10,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_progInstanced(this),
-      m_terrain(this), m_player(glm::vec3(48.f, 129.f, 48.f), m_terrain)
+      m_terrain(this), m_player(glm::vec3(48.f, 129.f, 48.f), m_terrain), accumulativeRotationOnRight(0.f)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -192,8 +192,29 @@ void MyGL::keyReleaseEvent(QKeyEvent *e) {
 
 void MyGL::mouseMoveEvent(QMouseEvent *e) {
     // TODO
-    m_inputs.mouseX = e->position().x();
-    m_inputs.mouseY = e->position().y();
+    QPoint currentPosition = e->pos();
+    QPoint center(width() / 2, height() / 2);
+    float theta = static_cast<float>(currentPosition.x() - center.x());
+    float phi = static_cast<float>(currentPosition.y() - center.y());
+    theta *= sensitivity;
+    phi *= sensitivity;
+    accumulativeRotationOnRight += phi;
+    if (accumulativeRotationOnRight > 90.f) {
+        float diff = 90.f - accumulativeRotationOnRight;
+        phi += diff;
+        accumulativeRotationOnRight = 90.f;
+    } else if (accumulativeRotationOnRight < -90.f) {
+        float diff = -90.f - accumulativeRotationOnRight;
+        phi += diff;
+        accumulativeRotationOnRight = -90.f;
+    }
+    m_player.rotateOnRightLocal(m_inputs.mouseY);
+    m_player.rotateOnUpGlobal(m_inputs.mouseX);
+    m_inputs.mouseY = -phi;
+    m_inputs.mouseX = -theta;
+    moveMouseToCenter();
+
+
 }
 
 void MyGL::mousePressEvent(QMouseEvent *e) {

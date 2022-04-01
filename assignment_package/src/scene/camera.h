@@ -22,9 +22,4 @@ public:
     void tick(float dT, InputBundle &input) override;
 
     glm::mat4 getViewProj() const;
-    glm::vec3 getForward() const;
-    float theta;
-    float phi;
-    float zoom;
-    void RecomputeAttributes(int, int);
 };
