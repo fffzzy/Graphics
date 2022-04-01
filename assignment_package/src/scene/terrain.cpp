@@ -309,14 +309,12 @@ void Terrain::setBlock(int x, int z){
     float p = (perlinNoise(glm::vec2(x/64.0 ,z/64.0) ) + 0.5);
     float r = fbm(p);
     float m = -508*r + 203.2 ;
-    m = std::max(std::min(
-                     m,127.f),0.f);
+    m = std::max(std::min(m,127.f),0.f);
     m+=128;
 
     float w = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
     float g = -25*w + 25;
-    g = std::max(std::min(
-                     g,40.f),0.f);
+    g = std::max(std::min(g,40.f),0.f);
     g+=128;
 
     int f;
@@ -328,8 +326,7 @@ void Terrain::setBlock(int x, int z){
     }else{
         f = int(glm::mix(g, m, b));
     }
-    f = std::max(std::min(
-                     f,254),0);
+    f = std::max(std::min(f,254),0);
 
     //comment this out to run faster
     for(int i = 1; i <= 128; i++){
