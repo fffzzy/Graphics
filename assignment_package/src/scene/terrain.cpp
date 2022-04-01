@@ -2,6 +2,8 @@
 #include "cube.h"
 #include <stdexcept>
 #include <iostream>
+#include <math.h>
+#include <algorithm>
 
 Terrain::Terrain(OpenGLContext *context)
     : m_chunks(), m_generatedTerrain(), mp_context(context)
@@ -163,43 +165,245 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
 }
 
 void Terrain::expandTerrain(int x, int z) {
+
+
     if (!hasChunkAt(x, z)) {
         instantiateChunkAt(x, z);
-
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x + i, z+ j);
+            }
+        }
     }
 
     if (!hasChunkAt(x + 16, z)) {
         instantiateChunkAt(x + 16, z);
-
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x + 16 + i, z + j);
+            }
+        }
     }
 
     if (!hasChunkAt(x, z + 16)) {
         instantiateChunkAt(x, z + 16);
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x+ i, z + 16 + j);
+            }
+        }
 
     }
 
     if (!hasChunkAt(x + 16, z + 16)) {
         instantiateChunkAt(x + 16, z + 16);
-
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x + 16 + i, z + 16+ j);
+            }
+        }
     }
 
     if (!hasChunkAt(x - 16, z)) {
         instantiateChunkAt(x - 16, z);
-
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x - 16+i, z+j);
+            }
+        }
     }
 
     if (!hasChunkAt(x, z - 16)) {
         instantiateChunkAt(x, z - 16);
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x+i, z - 16+j);
+            }
+        }
 
     }
 
     if (!hasChunkAt(x - 16, z - 16)) {
         instantiateChunkAt(x - 16, z - 16);
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x - 16+i, z - 16+j);
+            }
+        }
+
+    }
+
+}
+
+
+
+glm::vec2 random2( glm::vec2 p ) {
+    return glm::fract(glm::sin(glm::vec2(glm::dot(p, glm::vec2(127.1, 311.7)),
+                 glm::dot(p, glm::vec2(269.5,183.3))))
+                 * (float)43758.5453);
+}
+
+float surflet(glm::vec2 P, glm::vec2 gridPoint) {
+    // Compute falloff function by converting linear distance to a polynomial
+    float distX = abs(P.x - gridPoint.x);
+    float distY = abs(P.y - gridPoint.y);
+    float tX = 1 - 6 * pow(distX, 5.f) + 15 * pow(distX, 4.f) - 10 * pow(distX, 3.f);
+    float tY = 1 - 6 * pow(distY, 5.f) + 15 * pow(distY, 4.f) - 10 * pow(distY, 3.f);
+    // Get the random vector for the grid point
+    glm::vec2 gradient = 2.f * random2(gridPoint) - glm::vec2(1.f);
+    // Get the vector from the grid point to P
+    glm::vec2 diff = P - gridPoint;
+    // Get the value of our height field by dotting grid->P with our gradient
+    float height = glm::dot(diff, gradient);
+    // Scale our height field (i.e. reduce it) by our polynomial falloff function
+    return height * tX * tY;
+}
+
+float perlinNoise(glm::vec2 uv) {
+    float surfletSum = 0.f;
+    // Iterate over the four integer corners surrounding uv
+    for(int dx = 0; dx <= 1; ++dx) {
+        for(int dy = 0; dy <= 1; ++dy) {
+            surfletSum += surflet(uv, glm::floor(uv) + glm::vec2(dx, dy));
+        }
+    }
+    return surfletSum;
+}
+
+
+float noise1D(int x) {
+    double intPart, fractPart;
+    fractPart = std::modf(sin(x*127.1) *
+            43758.5453, &intPart);
+    return fractPart;
+}
+
+
+
+float interpNoise1D(float x) {
+    int intX = int(floor(x));
+    float fractX = x - intX;
+
+    float v1 = noise1D(intX);
+    float v2 = noise1D(intX+1);
+    return v1 + fractX*(v2-v1);
+}
+
+float fbm(float x) {
+    float total = 0;
+    float persistence = 0.5f;
+    int octaves = 8;
+    float freq = 2.f;
+    float amp = 0.5f;
+    for(int i = 1; i <= octaves; i++) {
+        total += interpNoise1D(x * freq) * amp;
+
+        freq *= 2.f;
+        amp *= persistence;
+    }
+    return total;
+}
+
+float WorleyDist(glm::vec2 uv) {
+    float grid = 2.0;
+    uv *= grid; // Now the space is 10x10 instead of 1x1. Change this to any number you want.
+    glm::vec2 uvInt = glm::floor(uv);
+    glm::vec2 uvFract = glm::fract(uv);
+
+    float minDist = 1000; // Minimuxm distance initialized to max.
+    glm::vec2 minPoint = glm::vec2(200,200);
+    for(int y = -1; y <= 1; ++y) {
+        for(int x = -1; x <= 1; ++x) {
+            glm::vec2 neighbor = glm::vec2(float(x), float(y)); // Direction in which neighbor cell lies
+            glm::vec2 point = random2(uvInt + neighbor); // Get the Voronoi centerpoint for the neighboring cell
+            glm::vec2 diff = neighbor + point - uvFract; // Distance between fragment coord and neighbor’s Voronoi point
+            float dist = glm::length(diff);
+            if(dist < minDist){
+                minPoint = glm::vec2((uv+diff)/grid);
+            }
+            minDist = std::min(minDist, dist);
+        }
+    }
+    return minDist;
+}
+
+void Terrain::setBlock(int x, int z){
+    float b = perlinNoise(glm::vec2(x/300.0, z/300.0))+0.5;
+
+    float p = (perlinNoise(glm::vec2(x/64.0 ,z/64.0) ) + 0.5);
+    float r = fbm(p);
+    float m = -508*r + 203.2 ;
+    m = std::max(std::min(
+                     m,127.f),0.f);
+    m+=128;
+
+    float w = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
+    float g = -25*w + 25;
+    g = std::max(std::min(
+                     g,40.f),0.f);
+    g+=128;
+
+    int f;
+
+    if(b > 0.6){
+        f = int(m);
+    }else if (b < 0.4){
+        f = int(g);
+    }else{
+        f = int(glm::mix(g, m, b));
+    }
+    f = std::max(std::min(
+                     f,254),0);
+
+    //comment this out to run faster
+    for(int i = 1; i <= 128; i++){
+        setBlockAt(x, i, z, STONE);
+    }
+
+    if(b > 0.5){
+        for(int i = 129; i <= f; i++){
+            if(i == f && f >= 200){
+                setBlockAt(x, i, z, SNOW);
+            }else{
+                setBlockAt(x, i, z, STONE);
+            }
+        }
+
+    }
+    else{
+        for(int i = 129; i <= f; i++){
+            if(i == f){
+                setBlockAt(x, i, z, GRASS);
+            }else{
+                setBlockAt(x, i, z, DIRT);
+            }
+        }
+    }
+    for(int i = f; i < 138; i++){
+        setBlockAt(x, i, z, WATER);
     }
 }
 
+
 void Terrain::CreateTestScene()
 {
+    // TODO: DELETE THIS LINE WHEN YOU DELETE m_geomCube!
+    //m_geomCube.createVBOdata();
+
     // Create the Chunks that will
     // store the blocks for our
     // initial world space
@@ -216,23 +420,8 @@ void Terrain::CreateTestScene()
     // Create the basic terrain floor
     for(int x = 0; x < 64; ++x) {
         for(int z = 0; z < 64; ++z) {
-            if((x + z) % 2 == 0) {
-                setBlockAt(x, 128, z, STONE);
-            }
-            else {
-                setBlockAt(x, 128, z, DIRT);
-            }
+            setBlock(x,z);
         }
     }
-    // Add "walls" for collision testing
-    for(int x = 0; x < 64; ++x) {
-        setBlockAt(x, 129, 0, GRASS);
-        setBlockAt(x, 130, 0, GRASS);
-        setBlockAt(x, 129, 63, GRASS);
-        setBlockAt(0, 130, x, GRASS);
-    }
-    // Add a central column
-    for(int y = 129; y < 140; ++y) {
-        setBlockAt(32, y, 32, GRASS);
-    }
+
 }
