@@ -165,79 +165,90 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
 }
 
 void Terrain::expandTerrain(int x, int z) {
+
+
     if (!hasChunkAt(x, z)) {
         instantiateChunkAt(x, z);
-
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x + i, z+ j);
+            }
+        }
     }
 
     if (!hasChunkAt(x + 16, z)) {
         instantiateChunkAt(x + 16, z);
-
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x + 16 + i, z + j);
+            }
+        }
     }
 
     if (!hasChunkAt(x, z + 16)) {
         instantiateChunkAt(x, z + 16);
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x+ i, z + 16 + j);
+            }
+        }
 
     }
 
     if (!hasChunkAt(x + 16, z + 16)) {
         instantiateChunkAt(x + 16, z + 16);
-
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x + 16 + i, z + 16+ j);
+            }
+        }
     }
 
     if (!hasChunkAt(x - 16, z)) {
         instantiateChunkAt(x - 16, z);
-
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x - 16+i, z+j);
+            }
+        }
     }
 
     if (!hasChunkAt(x, z - 16)) {
         instantiateChunkAt(x, z - 16);
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x+i, z - 16+j);
+            }
+        }
 
     }
 
     if (!hasChunkAt(x - 16, z - 16)) {
         instantiateChunkAt(x - 16, z - 16);
-    }
-}
-
-void Terrain::CreateTestScene()
-{
-    // Create the Chunks that will
-    // store the blocks for our
-    // initial world space
-    for(int x = 0; x < 64; x += 16) {
-        for(int z = 0; z < 64; z += 16) {
-            instantiateChunkAt(x, z);
-        }
-    }
-    // Tell our existing terrain set that
-    // the "generated terrain zone" at (0,0)
-    // now exists.
-    m_generatedTerrain.insert(toKey(0, 0));
-
-    // Create the basic terrain floor
-    for(int x = 0; x < 64; ++x) {
-        for(int z = 0; z < 64; ++z) {
-            if((x + z) % 2 == 0) {
-                setBlockAt(x, 128, z, STONE);
-            }
-            else {
-                setBlockAt(x, 128, z, DIRT);
+        x = 16 * glm::floor(x / 16.f);
+        z = 16 * glm::floor(z / 16.f);
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 16; j++){
+                setBlock(x - 16+i, z - 16+j);
             }
         }
+
     }
-    // Add "walls" for collision testing
-    for(int x = 0; x < 64; ++x) {
-        setBlockAt(x, 129, 0, GRASS);
-        setBlockAt(x, 130, 0, GRASS);
-        setBlockAt(x, 129, 63, GRASS);
-        setBlockAt(0, 130, x, GRASS);
-    }
-    // Add a central column
-    for(int y = 129; y < 140; ++y) {
-        setBlockAt(32, y, 32, GRASS);
-    }
+
 }
+
 
 
 glm::vec2 random2( glm::vec2 p ) {
@@ -272,13 +283,6 @@ float perlinNoise(glm::vec2 uv) {
     }
     return surfletSum;
 }
-
-//float noise1D(int x) {
-//    x = (x << 13) ^ x;
-//    return 5*((1 - (x * (x * x * 15731 + 789221)
-//            + 1376312589) & 0x7fffffff)
-//            / 10737741824.0);
-//}
 
 
 float noise1D(int x) {
@@ -315,7 +319,7 @@ float fbm(float x) {
 }
 
 float WorleyDist(glm::vec2 uv) {
-    float grid = 4.0;
+    float grid = 2.0;
     uv *= grid; // Now the space is 10x10 instead of 1x1. Change this to any number you want.
     glm::vec2 uvInt = glm::floor(uv);
     glm::vec2 uvFract = glm::fract(uv);
@@ -337,49 +341,68 @@ float WorleyDist(glm::vec2 uv) {
     return minDist;
 }
 
+void Terrain::setBlock(int x, int z){
+    float b = perlinNoise(glm::vec2(x/300.0, z/300.0))+0.5;
 
-void Terrain::CreateTestScene2()
-{
-    // TODO: DELETE THIS LINE WHEN YOU DELETE m_geomCube!
-    m_geomCube.createVBOdata();
+    float p = (perlinNoise(glm::vec2(x/64.0 ,z/64.0) ) + 0.5);
+    float r = fbm(p);
+    float m = -508*r + 203.2 ;
+    m = std::max(std::min(
+                     m,127.f),0.f);
+    m+=128;
 
-    // Create the Chunks that will
-    // store the blocks for our
-    // initial world space
-    for(int x = 0; x < 64; x += 16) {
-        for(int z = 0; z < 64; z += 16) {
-            instantiateChunkAt(x, z);
-        }
+    float w = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
+    float g = -25*w + 25;
+    g = std::max(std::min(
+                     g,40.f),0.f);
+    g+=128;
+
+    int f;
+
+    if(b > 0.6){
+        f = int(m);
+    }else if (b < 0.4){
+        f = int(g);
+    }else{
+        f = int(glm::mix(g, m, b));
     }
-    // Tell our existing terrain set that
-    // the "generated terrain zone" at (0,0)
-    // now exists.
-    m_generatedTerrain.insert(toKey(0, 0));
+    f = std::max(std::min(
+                     f,254),0);
 
-    // Create the basic terrain floor
-    for(int x = 0; x < 64; ++x) {
-        for(int z = 0; z < 64; ++z) {
-            float p = (perlinNoise(glm::vec2(x/16.0 ,z/16.0) ) + 0.5);
-            float r = fbm(p);
-            float y = -200*r + 80;
-            y = std::max(std::min(
-                             y,50.f),0.f);
-            std::cout << y << ", ";
-            int h = y + 128;
-            for(int i = 0; i < 3; i++){
-                setBlockAt(x, h-i, z, STONE);
+    //comment this out to run faster
+    for(int i = 1; i <= 128; i++){
+        setBlockAt(x, i, z, STONE);
+    }
+
+    if(b > 0.5){
+        for(int i = 129; i <= f; i++){
+            if(i == f && f >= 200){
+                setBlockAt(x, i, z, SNOW);
+            }else{
+                setBlockAt(x, i, z, STONE);
             }
-
         }
-        std::cout << "\n";
-    }
 
+    }
+    else{
+        for(int i = 129; i <= f; i++){
+            if(i == f){
+                setBlockAt(x, i, z, GRASS);
+            }else{
+                setBlockAt(x, i, z, DIRT);
+            }
+        }
+    }
+    for(int i = f; i < 138; i++){
+        setBlockAt(x, i, z, WATER);
+    }
 }
 
-void Terrain::CreateTestScene3()
+
+void Terrain::CreateTestScene()
 {
     // TODO: DELETE THIS LINE WHEN YOU DELETE m_geomCube!
-    m_geomCube.createVBOdata();
+    //m_geomCube.createVBOdata();
 
     // Create the Chunks that will
     // store the blocks for our
@@ -397,23 +420,8 @@ void Terrain::CreateTestScene3()
     // Create the basic terrain floor
     for(int x = 0; x < 64; ++x) {
         for(int z = 0; z < 64; ++z) {
-            float w = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
-            float y = -15*w + 15;
-            y = std::max(std::min(
-                             y,15.f),0.f);
-            std::cout << y << ", ";
-            int h = y + 128;
-            for(int i = 0; i < 3; i++){
-                if(i == 0){
-                    setBlockAt(x, h, z, GRASS);
-                }else{
-                    setBlockAt(x, h-i, z, DIRT);
-                }
-
-            }
-
+            setBlock(x,z);
         }
-        std::cout << "\n";
     }
 
 }

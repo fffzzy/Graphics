@@ -121,6 +121,9 @@ void Chunk::createVBOdata() {
                                     case STONE:
                                         col.push_back(glm::vec4(0.5f, 0.5f, 0.5f, 0.f));
                                         break;
+                                    case SNOW:
+                                        col.push_back(glm::vec4(1.f, 1.f, 1.f, 0.f));
+                                        break;
                                     case WATER:
                                         col.push_back(glm::vec4(0.f, 0.f, 0.75f, 0.f));
                                         break;

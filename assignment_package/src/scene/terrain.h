@@ -87,9 +87,9 @@ public:
     // Expands terrain by a chunk if the player is 16 blocks away from the edge of the current terrain
     void expandTerrain(int x, int z);
 
+    void setBlock(int x, int z);
+
     // Initializes the Chunks that store the 64 x 256 x 64 block scene you
     // see when the base code is run.
     void CreateTestScene();
-    void CreateTestScene2();
-    void CreateTestScene3();
 };
