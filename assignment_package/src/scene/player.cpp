@@ -154,7 +154,12 @@ void Player::moveWithCollisions(glm::vec3 move) {
             detectDir[i] = move[i];
             bool isBlock = gridMarch(box[j], detectDir, mcr_terrain, &out_dist, &out_blockHit);
             if (isBlock) {
-                move[i] = std::min(move[i], out_dist) - 0.001f;
+                //super robust block detector
+                if (out_dist > 0.001f) {
+                    move[i] = glm::sign(move[i]) * (glm::min(glm::abs(move[i]), out_dist) - 0.0001f);
+                } else {
+                    move[i] = 0;
+                }
             }
         }
     }
