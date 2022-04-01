@@ -20,12 +20,13 @@ public:
 
     bool isFlight;
     float acceleration = 1.f;
-    float jumpSpeed = 2.f;
+    float jumpSpeed = 200.f;
     float friction = 0.1f;
     float g = 0.1f;
 
     void addBlock();
     void removeBlock();
+    void moveWithCollisions(glm::vec3 move);
 
     Player(glm::vec3 pos, Terrain &terrain);
     virtual ~Player() override;

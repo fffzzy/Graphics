@@ -122,10 +122,32 @@ void Player::computePhysics(float dT, Terrain &terrain) {
     // and velocity, and also perform collision detection.
     m_velocity *= 1 - friction;
     m_velocity += m_acceleration * dT;
-    glm::vec3 movevec = glm::vec3(glm::rotate(glm::mat4(), glm::radians(m_camera.theta), glm::vec3(0.f, 1.f, 0.f))
+    glm::vec3 move = glm::vec3(glm::rotate(glm::mat4(), glm::radians(m_camera.theta), glm::vec3(0.f, 1.f, 0.f))
                                           * glm::rotate(glm::mat4(), glm::radians(m_camera.phi), glm::vec3(1.f, 0.f, 0.f))
                                           * glm::vec4((m_velocity * dT * 0.00003f), 1.f));
-    moveAlongVector(movevec);
+    if (isFlight) {
+        moveAlongVector(move);
+    } else {
+        moveWithCollisions(move);
+    }
+}
+
+void Player::moveWithCollisions(glm::vec3 move) {
+    float out_dist = -1.f;
+    glm::ivec3 out_blockHit = glm::ivec3();
+
+    for (int i = 0; i < 3; i++) {
+        //(0,1,0)
+        glm::vec3 detectDir = glm::vec3();
+        detectDir[i] = move[i];
+        bool isBlock = gridMarch(m_position, detectDir, mcr_terrain, &out_dist, &out_blockHit);
+        if (isBlock) {
+            if (out_dist < 0.01f) {
+                move[i] = 0;
+            }
+        }
+    }
+    moveAlongVector(move);
 }
 
 void Player::addBlock() {
