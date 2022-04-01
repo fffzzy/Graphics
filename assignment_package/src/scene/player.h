@@ -3,21 +3,35 @@
 #include "camera.h"
 #include "terrain.h"
 
+#include <vector>
+
 class Player : public Entity {
 private:
     glm::vec3 m_velocity, m_acceleration;
     Camera m_camera;
-    const Terrain &mcr_terrain;
+    Terrain &mcr_terrain;
 
     void processInputs(InputBundle &inputs);
-    void computePhysics(float dT, const Terrain &terrain);
+    void computePhysics(float dT, Terrain &terrain);
 
 public:
     // Readonly public reference to our camera
     // for easy access from MyGL
     const Camera& mcr_camera;
 
-    Player(glm::vec3 pos, const Terrain &terrain);
+
+    bool isFlight;
+    float acceleration = 1.f;
+    float jumpSpeed = 200.f;
+    float friction = 0.1f;
+    float g = 0.1f;
+
+    void addBlock();
+    void removeBlock();
+    void moveWithCollisions(glm::vec3 move);
+    void toggleFlight();
+
+    Player(glm::vec3 pos, Terrain &terrain);
     virtual ~Player() override;
 
     void setCameraWidthHeight(unsigned int w, unsigned int h);
