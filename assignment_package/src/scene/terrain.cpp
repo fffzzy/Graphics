@@ -124,7 +124,7 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
     z = 16 * glm::floor(z / 16.f);
 
     // Instantiate chunk
-    uPtr<Chunk> chunk = mkU<Chunk>(this->mp_context, x, z);
+    uPtr<Chunk> chunk = mkU<Chunk>(this->mp_context);
     Chunk *cPtr = chunk.get();
     m_chunks[toKey(x, z)] = move(chunk);
     // Set the neighbor pointers of itself and its neighbors
@@ -157,6 +157,12 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
         for(int z = minZ; z < maxZ; z += 16) {
             if (hasChunkAt(x, z)) {
                 const uPtr<Chunk> &chunk = getChunkAt(x, z);
+
+                // Set model matrix to appropriate offset
+                glm::mat4 modelMatrix = glm::mat4(1.f);
+                modelMatrix[3][0] = x;
+                modelMatrix[3][2] = z;
+                shaderProgram->setModelMatrix(modelMatrix);
                 chunk->createVBOdata();
                 shaderProgram->drawInterleaved(*chunk.get());
             }
