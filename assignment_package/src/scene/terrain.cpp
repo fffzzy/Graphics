@@ -144,6 +144,14 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
         auto &chunkWest = m_chunks[toKey(x - 16, z)];
         cPtr->linkNeighbor(chunkWest, XNEG);
     }
+
+    // Populate blocks
+    for(int i = 0; i < 16; i++){
+        for(int j = 0; j < 16; j++){
+            setBlock(x + i, z+ j);
+        }
+    }
+
     return cPtr;
     return cPtr;
 }
@@ -175,82 +183,30 @@ void Terrain::expandTerrain(int x, int z) {
 
     if (!hasChunkAt(x, z)) {
         instantiateChunkAt(x, z);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x + i, z+ j);
-            }
-        }
     }
 
     if (!hasChunkAt(x + 16, z)) {
         instantiateChunkAt(x + 16, z);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x + 16 + i, z + j);
-            }
-        }
     }
 
     if (!hasChunkAt(x, z + 16)) {
         instantiateChunkAt(x, z + 16);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x+ i, z + 16 + j);
-            }
-        }
-
     }
 
     if (!hasChunkAt(x + 16, z + 16)) {
         instantiateChunkAt(x + 16, z + 16);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x + 16 + i, z + 16+ j);
-            }
-        }
     }
 
     if (!hasChunkAt(x - 16, z)) {
         instantiateChunkAt(x - 16, z);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x - 16+i, z+j);
-            }
-        }
     }
 
     if (!hasChunkAt(x, z - 16)) {
         instantiateChunkAt(x, z - 16);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x+i, z - 16+j);
-            }
-        }
-
     }
 
     if (!hasChunkAt(x - 16, z - 16)) {
         instantiateChunkAt(x - 16, z - 16);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x - 16+i, z - 16+j);
-            }
-        }
-
     }
 
 }
