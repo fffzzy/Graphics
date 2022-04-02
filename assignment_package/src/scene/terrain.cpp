@@ -368,7 +368,7 @@ void Terrain::setBlock(int x, int z){
             }
         }
     }
-    for(int i = f; 138; i++){
+    for(int i = f; i < 138; i++){
         setBlockAt(x, i, z, WATER); // water 128 - 138
     }
 }
