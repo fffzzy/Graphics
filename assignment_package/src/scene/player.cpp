@@ -193,16 +193,20 @@ void Player::addBlock() {
         Chunk* c = mcr_terrain.getChunkAt(out_blockHit.x, out_blockHit.z).get();
         glm::vec2 chunkOrigin = glm::vec2(floor(out_blockHit.x / 16.f) * 16, floor(out_blockHit.z / 16.f) * 16);
 
-        c->setBlockAt(static_cast<unsigned int>(out_blockHit.x - chunkOrigin.x),
-                             static_cast<unsigned int>(out_blockHit.y),
-                             static_cast<unsigned int>(out_blockHit.z - chunkOrigin.y), STONE);
+        if (c->getBlockAt(glm::vec3(static_cast<unsigned int>(out_blockHit.x - chunkOrigin.x),
+                          static_cast<unsigned int>(out_blockHit.y),
+                          static_cast<unsigned int>(out_blockHit.z - chunkOrigin.y))) == EMPTY) {
+            c->setBlockAt(static_cast<unsigned int>(out_blockHit.x - chunkOrigin.x),
+                                 static_cast<unsigned int>(out_blockHit.y),
+                                 static_cast<unsigned int>(out_blockHit.z - chunkOrigin.y), STONE);
+        }
     }
 }
 
 void Player::removeBlock() {
     float out_dist = -1.f;
     glm::ivec3 out_blockHit = glm::ivec3();
-    bool isBlock = gridMarch(m_camera.mcr_position, m_forward, mcr_terrain, &out_dist, &out_blockHit);
+    bool isBlock = gridMarch(m_camera.mcr_position, 3.f * m_forward, mcr_terrain, &out_dist, &out_blockHit);
     if (isBlock) {
         mcr_terrain.setBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z, EMPTY);
     }
