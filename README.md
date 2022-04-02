@@ -10,4 +10,8 @@ rendered. This ensures that the necessary chunks always exist in memory.
 
 Charlie Herrmann: Procedural Terrain
 
+To implement the noise function for the height of the mountain I used fractal brownian noise overtop of perlin noise. For the rolling hills I used Worley noise. To interpolate bewteen biomes I used Perlin noise with a very large grid size. When this perlin noise was above 0.5 that signified mountains and below signified rolling hills. In between 0.4 and 0.6 I interpolated with the glm::mix function to provide a smoother transition between the regions. 
+
+To test the noise functions I created I modified my HW4 and using a shader, I created greyscale images representing my functions. One difficulty I encountered was converting between glsl and C++. For some reason I was not getting the same exact results with seemingly similar noise functions across the two languages. 
+
 Zhouyang Fang: Game Engine
