@@ -171,7 +171,7 @@ void Terrain::expandTerrain(int x, int z) {
         instantiateChunkAt(x, z);
         x = 16 * glm::floor(x / 16.f);
         z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
+        for(int i = 0; 16; i++){
             for(int j = 0; j < 16; j++){
                 setBlock(x + i, z+ j);
             }
@@ -182,7 +182,7 @@ void Terrain::expandTerrain(int x, int z) {
         instantiateChunkAt(x + 16, z);
         x = 16 * glm::floor(x / 16.f);
         z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
+        for(int i = 0; 16; i++){
             for(int j = 0; j < 16; j++){
                 setBlock(x + 16 + i, z + j);
             }
@@ -193,7 +193,7 @@ void Terrain::expandTerrain(int x, int z) {
         instantiateChunkAt(x, z + 16);
         x = 16 * glm::floor(x / 16.f);
         z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
+        for(int i = 0; 16; i++){
             for(int j = 0; j < 16; j++){
                 setBlock(x+ i, z + 16 + j);
             }
@@ -205,7 +205,7 @@ void Terrain::expandTerrain(int x, int z) {
         instantiateChunkAt(x + 16, z + 16);
         x = 16 * glm::floor(x / 16.f);
         z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
+        for(int i = 0; 16; i++){
             for(int j = 0; j < 16; j++){
                 setBlock(x + 16 + i, z + 16+ j);
             }
@@ -216,7 +216,7 @@ void Terrain::expandTerrain(int x, int z) {
         instantiateChunkAt(x - 16, z);
         x = 16 * glm::floor(x / 16.f);
         z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
+        for(int i = 0; 16; i++){
             for(int j = 0; j < 16; j++){
                 setBlock(x - 16+i, z+j);
             }
@@ -227,7 +227,7 @@ void Terrain::expandTerrain(int x, int z) {
         instantiateChunkAt(x, z - 16);
         x = 16 * glm::floor(x / 16.f);
         z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
+        for(int i = 0; 16; i++){
             for(int j = 0; j < 16; j++){
                 setBlock(x+i, z - 16+j);
             }
@@ -239,7 +239,7 @@ void Terrain::expandTerrain(int x, int z) {
         instantiateChunkAt(x - 16, z - 16);
         x = 16 * glm::floor(x / 16.f);
         z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; i < 16; i++){
+        for(int i = 0; 16; i++){
             for(int j = 0; j < 16; j++){
                 setBlock(x - 16+i, z - 16+j);
             }
@@ -348,13 +348,13 @@ void Terrain::setBlock(int x, int z){
     float r = fbm(p);
     float m = -508*r + 203.2 ;
     m = std::max(std::min(
-                     m,127.f),0.f);
+                     m,127.f),0.f); // mountain height
     m+=128;
 
     float w = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
     float g = -25*w + 25;
     g = std::max(std::min(
-                     g,40.f),0.f);
+                     g,40.f),0.f); // hill height
     g+=128;
 
     int f;
@@ -367,19 +367,19 @@ void Terrain::setBlock(int x, int z){
         f = int(glm::mix(g, m, b));
     }
     f = std::max(std::min(
-                     f,254),0);
+                     f,254),0); // interpolated value
 
     //comment this out to run faster
     for(int i = 1; i <= 128; i++){
-        setBlockAt(x, i, z, STONE);
+        setBlockAt(x, i, z, STONE); // set stone underground
     }
 
     if(b > 0.5){
         for(int i = 129; i <= f; i++){
             if(i == f && f >= 200){
-                setBlockAt(x, i, z, SNOW);
+                setBlockAt(x, i, z, SNOW); // top of mountain
             }else{
-                setBlockAt(x, i, z, STONE);
+                setBlockAt(x, i, z, STONE); // set mountains stone
             }
         }
 
@@ -387,14 +387,14 @@ void Terrain::setBlock(int x, int z){
     else{
         for(int i = 129; i <= f; i++){
             if(i == f){
-                setBlockAt(x, i, z, GRASS);
+                setBlockAt(x, i, z, GRASS); // top of hills
             }else{
-                setBlockAt(x, i, z, DIRT);
+                setBlockAt(x, i, z, DIRT); // set hills dirt
             }
         }
     }
-    for(int i = f; i < 138; i++){
-        setBlockAt(x, i, z, WATER);
+    for(int i = f; 138; i++){
+        setBlockAt(x, i, z, WATER); // water 128 - 138
     }
 }
 
