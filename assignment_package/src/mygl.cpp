@@ -10,7 +10,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_progInstanced(this),
-      m_terrain(this), m_player(glm::vec3(32.f, 129.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f)
+      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f)
 
 {
     // Connect the timer to a function so that when the timer ticks the function is executed

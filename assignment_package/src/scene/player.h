@@ -23,8 +23,8 @@ public:
     bool isFlight;
     float acceleration = 1.f;
     float jumpSpeed = 200.f;
-    float friction = 0.1f;
-    float g = 0.1f;
+    float friction = 0.9f;
+    float g = 0.5f;
 
     void addBlock();
     void removeBlock();
