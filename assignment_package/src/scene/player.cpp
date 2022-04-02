@@ -102,13 +102,13 @@ void Player::processInputs(InputBundle &inputs) {
             }
         }
         if (inputs.wPressed) {
-            m_acceleration = acceleration * m_forward;
+            m_acceleration = acceleration * glm::normalize(glm::vec3(m_forward.x, 0.f, m_forward.z));
         } else if (inputs.sPressed) {
-            m_acceleration = -acceleration * m_forward;
+            m_acceleration = -acceleration * glm::normalize(glm::vec3(this->m_forward.x, 0.f, this->m_forward.z));
         } else if (inputs.aPressed) {
-            m_acceleration = -acceleration * m_right;
+            m_acceleration = -acceleration * glm::normalize(glm::vec3(this->m_right.x, 0.f, this->m_right.z));
         } else if (inputs.dPressed) {
-            m_acceleration = acceleration * m_right;
+            m_acceleration = acceleration * glm::normalize(glm::vec3(this->m_right.x, 0.f, this->m_right.z));
         } else {
             m_acceleration.x = 0;
             m_acceleration.z = 0;

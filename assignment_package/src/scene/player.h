@@ -21,9 +21,9 @@ public:
 
 
     bool isFlight;
-    float acceleration = 1.f;
+    float acceleration = 0.1f;
     float jumpSpeed = 200.f;
-    float friction = 0.1f;
+    float friction = 0.3f;
     float g = 0.1f;
 
     void addBlock();
