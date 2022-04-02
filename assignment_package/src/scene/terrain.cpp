@@ -124,7 +124,7 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
     z = 16 * glm::floor(z / 16.f);
 
     // Instantiate chunk
-    uPtr<Chunk> chunk = mkU<Chunk>(this->mp_context, x, z);
+    uPtr<Chunk> chunk = mkU<Chunk>(this->mp_context);
     Chunk *cPtr = chunk.get();
     m_chunks[toKey(x, z)] = move(chunk);
     // Set the neighbor pointers of itself and its neighbors
@@ -144,6 +144,14 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
         auto &chunkWest = m_chunks[toKey(x - 16, z)];
         cPtr->linkNeighbor(chunkWest, XNEG);
     }
+
+    // Populate blocks
+    for(int i = 0; i < 16; i++){
+        for(int j = 0; j < 16; j++){
+            setBlock(x + i, z+ j);
+        }
+    }
+
     return cPtr;
     return cPtr;
 }
@@ -157,6 +165,12 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
         for(int z = minZ; z < maxZ; z += 16) {
             if (hasChunkAt(x, z)) {
                 const uPtr<Chunk> &chunk = getChunkAt(x, z);
+
+                // Set model matrix to appropriate offset
+                glm::mat4 modelMatrix = glm::mat4(1.f);
+                modelMatrix[3][0] = x;
+                modelMatrix[3][2] = z;
+                shaderProgram->setModelMatrix(modelMatrix);
                 chunk->createVBOdata();
                 shaderProgram->drawInterleaved(*chunk.get());
             }
@@ -169,81 +183,36 @@ void Terrain::expandTerrain(int x, int z) {
 
     if (!hasChunkAt(x, z)) {
         instantiateChunkAt(x, z);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x + i, z+ j);
-            }
-        }
+
     }
 
     if (!hasChunkAt(x + 16, z)) {
         instantiateChunkAt(x + 16, z);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x + 16 + i, z + j);
-            }
-        }
+
     }
 
     if (!hasChunkAt(x, z + 16)) {
         instantiateChunkAt(x, z + 16);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x+ i, z + 16 + j);
-            }
-        }
 
     }
 
     if (!hasChunkAt(x + 16, z + 16)) {
         instantiateChunkAt(x + 16, z + 16);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x + 16 + i, z + 16+ j);
-            }
-        }
+
     }
 
     if (!hasChunkAt(x - 16, z)) {
         instantiateChunkAt(x - 16, z);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x - 16+i, z+j);
-            }
-        }
+
     }
 
     if (!hasChunkAt(x, z - 16)) {
         instantiateChunkAt(x, z - 16);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x+i, z - 16+j);
-            }
-        }
 
     }
 
     if (!hasChunkAt(x - 16, z - 16)) {
         instantiateChunkAt(x - 16, z - 16);
-        x = 16 * glm::floor(x / 16.f);
-        z = 16 * glm::floor(z / 16.f);
-        for(int i = 0; 16; i++){
-            for(int j = 0; j < 16; j++){
-                setBlock(x - 16+i, z - 16+j);
-            }
-        }
 
     }
 
@@ -347,14 +316,18 @@ void Terrain::setBlock(int x, int z){
     float p = (perlinNoise(glm::vec2(x/64.0 ,z/64.0) ) + 0.5);
     float r = fbm(p);
     float m = -508*r + 203.2 ;
+
     m = std::max(std::min(
                      m,127.f),0.f); // mountain height
+
     m+=128;
 
     float w = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
     float g = -25*w + 25;
+
     g = std::max(std::min(
                      g,40.f),0.f); // hill height
+
     g+=128;
 
     int f;
@@ -366,8 +339,10 @@ void Terrain::setBlock(int x, int z){
     }else{
         f = int(glm::mix(g, m, b));
     }
+
     f = std::max(std::min(
                      f,254),0); // interpolated value
+
 
     //comment this out to run faster
     for(int i = 1; i <= 128; i++){

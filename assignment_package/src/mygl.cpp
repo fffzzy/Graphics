@@ -10,7 +10,8 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_progInstanced(this),
-      m_terrain(this), m_player(glm::vec3(32.f, 129.f, 32.f), m_terrain)
+      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f)
+
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -96,6 +97,9 @@ void MyGL::resizeGL(int w, int h) {
 void MyGL::tick() {
     this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
+    long long currframe = QDateTime::currentMSecsSinceEpoch();
+    m_player.tick(currframe - lastFrame, m_inputs);
+    lastFrame = currframe;
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
 }
 
@@ -158,33 +162,76 @@ void MyGL::keyPressEvent(QKeyEvent *e) {
     // chain of if statements instead
     if (e->key() == Qt::Key_Escape) {
         QApplication::quit();
-    } else if (e->key() == Qt::Key_Right) {
-        m_player.rotateOnUpGlobal(-amount);
-    } else if (e->key() == Qt::Key_Left) {
-        m_player.rotateOnUpGlobal(amount);
-    } else if (e->key() == Qt::Key_Up) {
-        m_player.rotateOnRightLocal(-amount);
-    } else if (e->key() == Qt::Key_Down) {
-        m_player.rotateOnRightLocal(amount);
     } else if (e->key() == Qt::Key_W) {
-        m_player.moveForwardLocal(amount);
+        m_inputs.wPressed = true;
     } else if (e->key() == Qt::Key_S) {
-        m_player.moveForwardLocal(-amount);
+        m_inputs.sPressed = true;
     } else if (e->key() == Qt::Key_D) {
-        m_player.moveRightLocal(amount);
+        m_inputs.dPressed = true;
     } else if (e->key() == Qt::Key_A) {
-        m_player.moveRightLocal(-amount);
+        m_inputs.aPressed = true;
     } else if (e->key() == Qt::Key_Q) {
-        m_player.moveUpGlobal(-amount);
+        m_inputs.qPressed = true;
     } else if (e->key() == Qt::Key_E) {
-        m_player.moveUpGlobal(amount);
+        m_inputs.ePressed = true;
+    } else if (e->key() == Qt::Key_Space) {
+        m_inputs.spacePressed = true;
+    } else if (e->key() == Qt::Key_F) {
+        m_player.toggleFlight();
+    }
+}
+
+void MyGL::keyReleaseEvent(QKeyEvent *e) {
+    if (e->key() == Qt::Key_W) {
+        m_inputs.wPressed = false;
+    } else if (e->key() == Qt::Key_S) {
+        m_inputs.sPressed = false;
+    } else if (e->key() == Qt::Key_A) {
+        m_inputs.aPressed = false;
+    } else if (e->key() == Qt::Key_D) {
+        m_inputs.dPressed = false;
+    } else if (e->key() == Qt::Key_E) {
+        m_inputs.ePressed = false;
+    } else if (e->key() == Qt::Key_Q) {
+        m_inputs.qPressed = false;
+    } else if (e->key() == Qt::Key_Space) {
+        m_inputs.spacePressed = false;
     }
 }
 
 void MyGL::mouseMoveEvent(QMouseEvent *e) {
     // TODO
+    QPoint currentPosition = e->pos();
+    QPoint center(width() / 2, height() / 2);
+    float theta = static_cast<float>(currentPosition.x() - center.x());
+    float phi = static_cast<float>(currentPosition.y() - center.y());
+    theta *= sensitivity;
+    phi *= sensitivity;
+    accumulativeRotationOnRight += phi;
+    if (accumulativeRotationOnRight > 90.f) {
+        float diff = 90.f - accumulativeRotationOnRight;
+        phi += diff;
+        accumulativeRotationOnRight = 90.f;
+    } else if (accumulativeRotationOnRight < -90.f) {
+        float diff = -90.f - accumulativeRotationOnRight;
+        phi += diff;
+        accumulativeRotationOnRight = -90.f;
+    }
+    m_player.rotateOnRightLocal(m_inputs.mouseY);
+    m_player.rotateOnUpGlobal(m_inputs.mouseX);
+    m_inputs.mouseY = -phi;
+    m_inputs.mouseX = -theta;
+    moveMouseToCenter();
+
+
 }
 
 void MyGL::mousePressEvent(QMouseEvent *e) {
-    // TODO
+    if (e->button() == Qt::LeftButton) {
+        m_player.removeBlock();
+    } else if (e->button() == Qt::RightButton) {
+        m_player.addBlock();
+    }
 }
+
+

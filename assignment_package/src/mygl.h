@@ -11,6 +11,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
 #include <smartpointerhelp.h>
+#include <QDateTime>
 
 
 class MyGL : public OpenGLContext
@@ -30,6 +31,9 @@ private:
     InputBundle m_inputs; // A collection of variables to be updated in keyPressEvent, mouseMoveEvent, mousePressEvent, etc.
 
     QTimer m_timer; // Timer linked to tick(). Fires approximately 60 times per second.
+    long long lastFrame;
+    float sensitivity = 0.1f;
+    float accumulativeRotationOnRight;
 
     void moveMouseToCenter(); // Forces the mouse position to the screen's center. You should call this
                               // from within a mouse move event after reading the mouse movement so that
@@ -61,6 +65,8 @@ protected:
     // Automatically invoked when the user
     // presses a key on the keyboard
     void keyPressEvent(QKeyEvent *e);
+
+    void keyReleaseEvent(QKeyEvent *e);
     // Automatically invoked when the user
     // moves the mouse
     void mouseMoveEvent(QMouseEvent *e);

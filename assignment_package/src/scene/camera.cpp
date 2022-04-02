@@ -1,5 +1,4 @@
 #include "camera.h"
-#include "glm_includes.h"
 
 Camera::Camera(glm::vec3 pos)
     : Camera(400, 400, pos)

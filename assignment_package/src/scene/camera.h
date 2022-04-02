@@ -1,5 +1,6 @@
 #pragma once
-#include "glm_includes.h"
+
+#include "la.h"
 #include "scene/entity.h"
 
 //A perspective projection camera

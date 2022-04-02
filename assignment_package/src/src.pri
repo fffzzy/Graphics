@@ -2,6 +2,7 @@ INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
 SOURCES += \
+    $$PWD/la.cpp \
     $$PWD/main.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/mygl.cpp \
@@ -19,6 +20,7 @@ SOURCES += \
     $$PWD/scene/chunk.cpp
 
 HEADERS += \
+    $$PWD/la.h \
     $$PWD/mainwindow.h \
     $$PWD/mygl.h \
     $$PWD/scene/chunkhelpers.h \

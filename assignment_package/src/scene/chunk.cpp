@@ -1,7 +1,7 @@
 #include "chunk.h"
 
 
-Chunk::Chunk(OpenGLContext* mp_context, int Xoffset, int Zoffset) : Drawable(mp_context), m_Xoffset(Xoffset), m_Zoffset(Zoffset), m_blocks(), m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}}
+Chunk::Chunk(OpenGLContext* mp_context) : Drawable(mp_context), m_blocks(), m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}}
 {
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
@@ -12,37 +12,37 @@ BlockType Chunk::getBlockAt(unsigned int x, unsigned int y, unsigned int z) cons
     if ((int) x < 0) {
         // Check for no neighbor
         if (m_neighbors.at(XNEG) == nullptr) {
-            return EMPTY;
+            return UNDETERMINED;
         }
         return m_neighbors.at(XNEG)->getBlockAt(16 + x, y, z);
     } else if ((int) x >= 16) {
         // Check for no neighbor
         if (m_neighbors.at(XPOS) == nullptr) {
-            return EMPTY;
+            return UNDETERMINED;
         }
         return m_neighbors.at(XPOS)->getBlockAt(x - 16, y, z);
     } else if ((int) y < 0) {
         // Check for no neighbor
         if (m_neighbors.at(YNEG) == nullptr) {
-            return EMPTY;
+            return UNDETERMINED;
         }
         return m_neighbors.at(YNEG)->getBlockAt(x, 256 + y, z);
     } else if ((int) y >= 256) {
         // Check for no neighbor
         if (m_neighbors.at(YPOS) == nullptr) {
-            return EMPTY;
+            return UNDETERMINED;
         }
         return m_neighbors.at(YPOS)->getBlockAt(x, y - 256, z);
     } else if ((int) z < 0) {
         // Check for no neighbor
         if (m_neighbors.at(ZNEG) == nullptr) {
-            return EMPTY;
+            return UNDETERMINED;
         }
         return m_neighbors.at(ZNEG)->getBlockAt(x, y, 16 + z);
     } else if ((int) z >= 16) {
         // Check for no neighbor
         if (m_neighbors.at(ZPOS) == nullptr) {
-            return EMPTY;
+            return UNDETERMINED;
         }
         return m_neighbors.at(ZPOS)->getBlockAt(x, y, z - 16);
     }
@@ -99,7 +99,7 @@ void Chunk::createVBOdata() {
 
                 if (btAtCurrPos != EMPTY) {
                     glm::vec3 currPos = glm::vec3(x, y, z);
-                    glm::vec3 currWorldPos = glm::vec3(x+m_Xoffset, y, z+m_Zoffset);
+                    glm::vec3 currWorldPos = glm::vec3(x, y, z);
 
                     // Look at all neighbors and add appropriate faces
                     for (BlockFace neighborFace : adjacentFaces) {
