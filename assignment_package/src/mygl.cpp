@@ -9,7 +9,7 @@
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
-      m_progLambert(this), m_progFlat(this), m_progInstanced(this),
+      m_progLambert(this), m_progFlat(this), m_diffuseTexture(this),
       m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f)
 
 {
@@ -52,6 +52,8 @@ void MyGL::initializeGL()
 
     // Create a Vertex Attribute Object
     glGenVertexArrays(1, &vao);
+    m_diffuseTexture.create(":/textures/minecraft_textures_all.png");
+    m_diffuseTexture.load(0);
 
     //Create the instance of the world axes
     m_worldAxes.createVBOdata();
@@ -60,7 +62,6 @@ void MyGL::initializeGL()
     m_progLambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     m_progFlat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
-    m_progInstanced.create(":/glsl/instanced.vert.glsl", ":/glsl/lambert.frag.glsl");
 
     // Set a color with which to draw geometry.
     // This will ultimately not be used when you change
@@ -125,9 +126,10 @@ void MyGL::paintGL() {
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setModelMatrix(glm::mat4());
-    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 
     this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+
+    m_diffuseTexture.bind(0);
 
     renderTerrain();
 

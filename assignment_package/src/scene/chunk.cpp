@@ -86,7 +86,7 @@ void Chunk::createVBOdata() {
     // Create stores for all the square faces to be drawn
     std::vector<glm::vec4> pos = std::vector<glm::vec4>();
     std::vector<glm::vec4> nor = std::vector<glm::vec4>();
-    std::vector<glm::vec4> col = std::vector<glm::vec4>();
+    std::vector<glm::vec4> uv = std::vector<glm::vec4>();
     std::vector<int> idx = std::vector<int>();
 
     int indexOffset = 0;
@@ -110,38 +110,51 @@ void Chunk::createVBOdata() {
                             for (VertexData VD : neighborFace.vertices) {
                                 pos.push_back(glm::vec4(currWorldPos, 0.f) + VD.pos);
                                 nor.push_back(glm::vec4(neighborFace.directionVec, 0.f));
+                                glm::vec2 UVoffset;
 
                                 switch(btAtCurrPos) {
                                     case GRASS:
-                                        col.push_back(glm::vec4(95.f, 159.f, 53.f, 0.f) / 255.f);
+                                        // Set offset for grass top
+                                        if (neighborFace.direction == YPOS) {
+                                            UVoffset = glm::vec2(8, 13);
+                                        } else if (neighborFace.direction == YNEG) { // Set offset for grass bottom
+                                            UVoffset = glm::vec2(2, 15);
+                                        } else { // Set offset for grass sides
+                                            UVoffset = glm::vec2(3, 15);
+                                        }
                                         break;
                                     case DIRT:
-                                        col.push_back(glm::vec4(121.f, 85.f, 58.f, 0.f) / 255.f);
+                                        // Set offset for dirt
+                                        UVoffset = glm::vec2(2, 15);
                                         break;
                                     case STONE:
-                                        col.push_back(glm::vec4(0.5f, 0.5f, 0.5f, 0.f));
+                                        // Set offset for stone
+                                        UVoffset = glm::vec2(1, 15);
                                         break;
                                     case SNOW:
-                                        col.push_back(glm::vec4(1.f, 1.f, 1.f, 0.f));
+                                        UVoffset = glm::vec2(2, 11);
                                         break;
                                     case WATER:
-                                        col.push_back(glm::vec4(0.f, 0.f, 0.75f, 0.f));
+                                        UVoffset = glm::vec2(13, 3);
                                         break;
                                     default:
                                         // Other block types are not yet handled, so we default to debug purple
-                                        col.push_back(glm::vec4(1.f, 0.f, 1.f, 0.f));
+                                        UVoffset = glm::vec2(10, 3);
                                         break;
                                 }
 
-                                // Push indices
-                                idx.push_back(0 + indexOffset);
-                                idx.push_back(1 + indexOffset);
-                                idx.push_back(2 + indexOffset);
-                                idx.push_back(0 + indexOffset);
-                                idx.push_back(2 + indexOffset);
-                                idx.push_back(3 + indexOffset);
-                                indexOffset += 4;
+                                // Push UVs
+                                uv.push_back(glm::vec4(VD.uv + UVoffset / 16.f, 0, 0));
                             }
+
+                            // Push indices
+                            idx.push_back(0 + indexOffset);
+                            idx.push_back(1 + indexOffset);
+                            idx.push_back(2 + indexOffset);
+                            idx.push_back(0 + indexOffset);
+                            idx.push_back(2 + indexOffset);
+                            idx.push_back(3 + indexOffset);
+                            indexOffset += 4;
                         }
                     }
                 }
@@ -154,7 +167,7 @@ void Chunk::createVBOdata() {
     for (int i = 0; i < pos.size(); i++) {
         interleavedVector.push_back(pos[i]);
         interleavedVector.push_back(nor[i]);
-        interleavedVector.push_back(col[i]);
+        interleavedVector.push_back(uv[i]);
     }
 
     this->bufferVBOdata(interleavedVector, idx);
@@ -171,8 +184,8 @@ void Chunk::bufferVBOdata(std::vector<glm::vec4> interleavedData, std::vector<in
     mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufNor);
     mp_context->glBufferData(GL_ARRAY_BUFFER, interleavedData.size() * sizeof(glm::vec4), interleavedData.data(), GL_STATIC_DRAW);
 
-    generateCol();
-    mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufCol);
+    generateUV();
+    mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufUV);
     mp_context->glBufferData(GL_ARRAY_BUFFER, interleavedData.size() * sizeof(glm::vec4), interleavedData.data(), GL_STATIC_DRAW);
 
     generateIdx();
