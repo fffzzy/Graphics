@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include "shaderprogram.h"
 #include "cube.h"
-#include "fbmworker.h"
+#include "blocktypeworker.h"
 #include "vboworker.h"
 #include <QThreadPool>
 
@@ -56,10 +56,10 @@ private:
 
     OpenGLContext* mp_context;
 
-    std::vector<Chunk*> m_chunksThatHaveBlockTypeData;
-    QMutex m_chunksThatHaveBlockTypeDataLock;
+    std::vector<Chunk*> m_chunksThatHaveBlockData;
+    QMutex m_chunksThatHaveBlockDataLock;
 
-    std::vector<ChunkVBOData> m_VBOData;
+    std::vector<ChunkVBOData> m_chunksThatHaveVBOs;
     QMutex m_chunksThatHaveVBOsLock;
     float m_tryExpansionTimer;
 
@@ -102,9 +102,8 @@ public:
     // Initializes the Chunks that store the 64 x 256 x 64 block scene you
     // see when the base code is run.
     void CreateTestScene();
+    void spawnVBOWorkers(const vector<Chunk*> &chunksNeedingVBOs);
     void checkThreadResults();
-    void spawnVBOWorker(Chunk*);
-    void spawnVBOWorkers(const std::vector<Chunk*> chunksNeedingVBOData);
     void multithreadedWork(glm::vec3 playerPos, glm::vec3 playerPosPrev, float dT);
     void tryExpansion(glm::vec3 playerPos, glm::vec3 playerPosPrev);
     QSet<int64_t> terrainZonesBoarderingZone(glm::ivec2 zone);

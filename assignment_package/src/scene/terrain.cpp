@@ -7,7 +7,7 @@
 
 Terrain::Terrain(OpenGLContext *context)
     : m_chunks(), m_generatedTerrain(), mp_context(context),
-      m_tryExpansionTimer(0.f);
+      m_tryExpansionTimer(0.f)
 {}
 
 Terrain::~Terrain() {
@@ -402,19 +402,24 @@ void Terrain::CreateTestScene()
 
 }
 
+void Terrain::spawnVBOWorkers(const vector<Chunk*> &chunksNeedingVBOs) {
+    for (Chunk* c : chunksNeedingVBOs) {
+        spawnVBOWorker(c);
+    }
+}
 
 void Terrain::checkThreadResults() {
-    m_chunksThatHaveBlockTypeDataLock.lock();
-    spawnVBOWorkers(m_chunksThatHaveBlockTypeData);
-    m_chunksThatHaveBlockTypeData.clear();
-    m_chunksThatHaveBlockTypeDataLock.unlock();
+    m_chunksThatHaveBlockDataLock.lock();
+    spawnVBOWorkers(m_chunksThatHaveBlockData);
+    m_chunksThatHaveBlockData.clear();
+    m_chunksThatHaveBlockDataLock.unlock();
 
     m_chunksThatHaveVBOsLock.lock();
-    for(auto& cd: m_VBOData) {
+    for(auto& cd: m_chunksThatHaveVBOs) {
         cd.mp_chunk->createVBO(cd.m_trans, cd.m_transIdx, cd.m_op, cd.m_opIdx);
         cd.mp_chunk->hasVBOdata = true;
     }
-    m_VBOData.clear();
+    m_chunksThatHaveVBOs.clear();
     m_chunksThatHaveVBOsLock.unlock();
 }
 
