@@ -6,7 +6,8 @@
 #include <algorithm>
 
 Terrain::Terrain(OpenGLContext *context)
-    : m_chunks(), m_generatedTerrain(), mp_context(context)
+    : m_chunks(), m_generatedTerrain(), mp_context(context),
+      m_tryExpansionTimer(0.f);
 {}
 
 Terrain::~Terrain() {
@@ -399,4 +400,41 @@ void Terrain::CreateTestScene()
         }
     }
 
+}
+
+
+void Terrain::checkThreadResults() {
+    m_chunksThatHaveBlockTypeDataLock.lock();
+    spawnVBOWorkers(m_chunksThatHaveBlockTypeData);
+    m_chunksThatHaveBlockTypeData.clear();
+    m_chunksThatHaveBlockTypeDataLock.unlock();
+
+    m_chunksThatHaveVBOsLock.lock();
+    for(auto& cd: m_VBOData) {
+        cd.mp_chunk->createVBO(cd.m_trans, cd.m_transIdx, cd.m_op, cd.m_opIdx);
+        cd.mp_chunk->hasVBOdata = true;
+    }
+    m_VBOData.clear();
+    m_chunksThatHaveVBOsLock.unlock();
+}
+
+void Terrain::spawnVBOWorker(Chunk *chunk) {
+    VBOWorker* worker = new VBOWorker(chunk, &m_VBOData, &m_chunksThatHaveVBOsLock);
+    QThreadPool::globalInstance()->start(worker);
+}
+
+void Terrain::spawnVBOWorkers(const std::vector<Chunk*> chunksNeedingVBOData) {
+    for(Chunk* c: chunksNeedingVBOData) {
+        spawnVBOWorker(c);
+    }
+}
+
+void Terrain::multithreadedWork(glm::vec3 playerPos, glm::vec3 playerPosPrev, float dT) {
+    m_tryExpansionTimer += dT;
+    if (m_tryExpansionTimer < 0.5f) {
+        return;
+    }
+    tryExpansion(playerPos, playerPosPrev);
+    checkThreadResults();
+    m_tryExpansionTimer = 0.f;
 }
