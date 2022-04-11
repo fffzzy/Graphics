@@ -105,5 +105,10 @@ public:
     void checkThreadResults();
     void spawnVBOWorker(Chunk*);
     void spawnVBOWorkers(const std::vector<Chunk*> chunksNeedingVBOData);
-    void Terrain::multithreadedWork(glm::vec3 playerPos, glm::vec3 playerPosPrev, float dT);
+    void multithreadedWork(glm::vec3 playerPos, glm::vec3 playerPosPrev, float dT);
+    void tryExpansion(glm::vec3 playerPos, glm::vec3 playerPosPrev);
+    QSet<int64_t> terrainZonesBoarderingZone(glm::ivec2 zone);
+    bool terrainZoneExists(int x, int z) const;
+    void spawnBlockTypeWorker(int64_t zoneToGenerate);
+    void spawnVBOWorker(Chunk* chunkNeedingVBOData);
 };

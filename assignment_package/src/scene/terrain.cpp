@@ -418,23 +418,91 @@ void Terrain::checkThreadResults() {
     m_chunksThatHaveVBOsLock.unlock();
 }
 
-void Terrain::spawnVBOWorker(Chunk *chunk) {
-    VBOWorker* worker = new VBOWorker(chunk, &m_VBOData, &m_chunksThatHaveVBOsLock);
-    QThreadPool::globalInstance()->start(worker);
-}
-
-void Terrain::spawnVBOWorkers(const std::vector<Chunk*> chunksNeedingVBOData) {
-    for(Chunk* c: chunksNeedingVBOData) {
-        spawnVBOWorker(c);
-    }
-}
-
 void Terrain::multithreadedWork(glm::vec3 playerPos, glm::vec3 playerPosPrev, float dT) {
     m_tryExpansionTimer += dT;
-    if (m_tryExpansionTimer < 0.5f) {
+    if (m_tryExpansionTimer < 5.f) {
         return;
     }
     tryExpansion(playerPos, playerPosPrev);
     checkThreadResults();
     m_tryExpansionTimer = 0.f;
 }
+
+void Terrain::tryExpansion(glm::vec3 playerPos, glm::vec3 playerPosPrev) {
+    glm::ivec2 currZone = glm::ivec2(glm::floor(playerPos.x / 64.f) * 64.f, glm::floor(playerPos.z / 64.f) * 64.f);
+    glm::ivec2 prevZone = glm::ivec2(glm::floor(playerPosPrev.x / 64.f) * 64.f, glm::floor(playerPosPrev.z / 64.f) * 64.f);
+
+    QSet<int64_t> terrainZonesBorderingCurrPos = terrainZonesBoarderingZone(currZone);
+    QSet<int64_t> terrainZonesBorderingPrevPos = terrainZonesBoarderingZone(prevZone);
+
+    //destroy
+    for(auto id: terrainZonesBorderingPrevPos) {
+        if(!terrainZonesBorderingCurrPos.contains(id)) {
+            glm::ivec2 coord = toCoords(id);
+            for(int x = coord.x; x < coord.x + 64; x += 16) {
+                for(int z = coord.y; z < coord.y + 64; z += 16) {
+                    auto& chunk = getChunkAt(x, z);
+                    chunk->destroyVBOdata();
+                }
+            }
+        }
+    }
+    for(auto id: terrainZonesBorderingCurrPos) {
+        glm::ivec2 zone = toCoords(id);
+        if(terrainZoneExists(zone.x,zone.y)) {
+            if(!terrainZonesBorderingPrevPos.contains(id)) {
+                for(int x = zone.x; x < zone.x + 64; x += 16) {
+                    for(int z = zone.y; z < zone.y + 64; z += 16) {
+                        auto& chunk = getChunkAt(x, z);
+                        spawnVBOWorker(chunk.get());
+                    }
+                }
+            }
+        }else{
+            spawnBlockTypeWorker(id);
+        }
+    }
+}
+
+QSet<int64_t> Terrain::terrainZonesBoarderingZone(glm::ivec2 zone) {
+    QSet<int64_t> neighbors;
+    //5x5
+    for (int i = -128; i <= 128; i += 64) {
+        for (int j = -128; j <= 128; j += 64) {
+            neighbors.insert(toKey(zone.x + i, zone.y + j));
+        }
+    }
+    return neighbors;
+}
+
+bool Terrain::terrainZoneExists(int x, int z) const {
+    int xFloor = static_cast<int>(glm::floor(x / 64.f));
+    int zFloor = static_cast<int>(glm::floor(z / 64.f));
+    return m_generatedTerrain.find(toKey(64 * xFloor, 64 * zFloor)) != m_generatedTerrain.end();
+}
+
+void Terrain::spawnBlockTypeWorker(int64_t zoneToGenerate) {
+    m_generatedTerrain.insert(zoneToGenerate);
+    vector<Chunk*> chunksforWorker;
+    glm::ivec2 coords = toCoords(zoneToGenerate);
+    for(int x = coords.x; x < coords.x + 64; x += 16) {
+        for(int z = coords.y; z < coords.y + 64; z += 16) {
+            Chunk* c = instantiateChunkAt(x,z);
+            c->m_position = glm::ivec2(x,z); //allow it to be drawn even without VBO data
+            c->m_count = 0; //allow it to be drawn even without VBO data
+            chunksforWorker.push_back(c);
+        }
+    }
+    BlockTypeWorker *worker = new BlockTypeWorker(coords.x, coords.y, chunksforWorker, &m_chunksThatHaveBlockData, &m_chunksThatHaveBlockDataLock);
+    QThreadPool::globalInstance()->start(worker);
+}
+
+void Terrain::spawnVBOWorker(Chunk* chunkNeedingVBOData) {
+    VBOWorker *worker = new VBOWorker(chunkNeedingVBOData, &m_chunksThatHaveVBOs, &m_chunksThatHaveVBOsLock);
+    QThreadPool::globalInstance()->start(worker);
+}
+
+
+
+
+
