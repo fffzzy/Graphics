@@ -26,6 +26,8 @@ public:
 	float friction = 0.9f;
 	float g = 0.5f;
 
+    glm::vec3 mcr_posPrev;
+
 
 	void addBlock();
 	void removeBlock();

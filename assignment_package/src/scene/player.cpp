@@ -53,7 +53,7 @@ bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terra
 Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
-      mcr_camera(m_camera), isFlight(true)
+      mcr_camera(m_camera), isFlight(true), mcr_posPrev(0,0,0)
 {}
 
 Player::~Player()

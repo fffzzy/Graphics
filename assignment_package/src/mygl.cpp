@@ -106,7 +106,7 @@ void MyGL::tick() {
     m_terrain.multithreadedWork(m_player.mcr_position, m_player.mcr_posPrev, dT);
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
-    lastFrame = m_currframe;
+    m_prevFrameTime = m_currFrameTime;
 }
 
 void MyGL::sendPlayerDataToGUI() const {
