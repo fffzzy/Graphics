@@ -416,8 +416,9 @@ void Terrain::checkThreadResults() {
 
     m_chunksThatHaveVBOsLock.lock();
     for(auto& cd: m_chunksThatHaveVBOs) {
-        cd.mp_chunk->createVBO(cd.m_trans, cd.m_transIdx, cd.m_op, cd.m_opIdx);
-        cd.mp_chunk->hasVBOdata = true;
+        cd.mp_chunk->bufferVBOdata(cd.m_vboDataOpaque, cd.m_idxDataOpaque,
+                                   cd.m_vboDataTransparent, cd.m_idxDataTransparent);
+//        cd.mp_chunk->hasVBOdata = true;
     }
     m_chunksThatHaveVBOs.clear();
     m_chunksThatHaveVBOsLock.unlock();
@@ -493,8 +494,8 @@ void Terrain::spawnBlockTypeWorker(int64_t zoneToGenerate) {
     for(int x = coords.x; x < coords.x + 64; x += 16) {
         for(int z = coords.y; z < coords.y + 64; z += 16) {
             Chunk* c = instantiateChunkAt(x,z);
-            c->m_position = glm::ivec2(x,z); //allow it to be drawn even without VBO data
-            c->m_count = 0; //allow it to be drawn even without VBO data
+            // c->m_countOpq = 0; //allow it to be drawn even without VBO data
+            // c->m_countTra = 0; //allow it to be drawn even without VBO data
             chunksforWorker.push_back(c);
         }
     }

@@ -1,7 +1,9 @@
 #include "chunk.h"
 
 
-Chunk::Chunk(OpenGLContext* mp_context) : Drawable(mp_context), m_blocks(), m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}}
+Chunk::Chunk(OpenGLContext* mp_context) : Drawable(mp_context), m_blocks(),
+    m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}},
+    m_chunkVBOData(this)
 {
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
@@ -158,6 +160,7 @@ void Chunk::createVBOdata() {
     }
 
     this->bufferVBOdata(interleavedVector, idx);
+
 }
 
 void Chunk::bufferVBOdata(std::vector<glm::vec4> interleavedData, std::vector<int> indices) {
