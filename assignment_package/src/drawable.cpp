@@ -65,6 +65,13 @@ void Drawable::generateCol()
     mp_context->glGenBuffers(1, &m_bufCol);
 }
 
+void Drawable::generateUV()
+{
+    m_uvGenerated = true;
+    // Create a VBO on our GPU and store its handle in bufUV
+    mp_context->glGenBuffers(1, &m_bufUV);
+}
+
 bool Drawable::bindIdx()
 {
     if(m_idxGenerated) {
@@ -95,6 +102,15 @@ bool Drawable::bindCol()
         mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufCol);
     }
     return m_colGenerated;
+}
+
+
+bool Drawable::bindUV()
+{
+    if(m_uvGenerated){
+        mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufUV);
+    }
+    return m_uvGenerated;
 }
 
 InstancedDrawable::InstancedDrawable(OpenGLContext *context)
