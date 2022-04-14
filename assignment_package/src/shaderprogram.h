@@ -25,7 +25,8 @@ public:
     int unifModelInvTr; // A handle for the "uniform" mat4 representing inverse transpose of the model matrix in the vertex shader
     int unifViewProj; // A handle for the "uniform" mat4 representing combined projection and view matrices in the vertex shader
     int unifColor; // A handle for the "uniform" vec4 representing color of geometry in the vertex shader
-    int unifSampler2D;
+    int unifSampler2D; // A handle for the "uniform" texture
+    int unifTime; // A handle for the time variable
 
 public:
     ShaderProgram(OpenGLContext* context);
@@ -45,6 +46,8 @@ public:
     void drawInstanced(InstancedDrawable &d);
     // Draw the given object using interleaved rendering
     void drawInterleaved(Drawable &d);
+    // Function to set time
+    void setTime(int t);
     // Utility function used in create()
     char* textFileRead(const char*);
     // Utility function that prints any shader compilation errors to the console

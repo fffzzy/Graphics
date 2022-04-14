@@ -73,6 +73,7 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
     unifColor      = context->glGetUniformLocation(prog, "u_Color");
     unifSampler2D  = context->glGetUniformLocation(prog, "u_Texture");
+    unifTime = context->glGetUniformLocation(prog, "u_Time");
 }
 
 void ShaderProgram::useMe()
@@ -296,6 +297,16 @@ void ShaderProgram::drawInterleaved(Drawable &d)
     if (attrUV  != -1) context->glDisableVertexAttribArray(attrUV);
 
     context->printGLErrorLog();
+}
+
+void ShaderProgram::setTime(int t)
+{
+    useMe();
+
+    if(unifTime != -1)
+    {
+        context->glUniform1i(unifTime, t);
+    }
 }
 
 char* ShaderProgram::textFileRead(const char* fileName) {

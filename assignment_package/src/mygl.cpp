@@ -10,7 +10,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_diffuseTexture(this),
-      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f)
+      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f), m_time(0.f)
 
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -45,6 +45,8 @@ void MyGL::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // Set the color with which the screen is filled at the start of each render call.
     glClearColor(0.37f, 0.74f, 1.0f, 1);
 
@@ -97,11 +99,13 @@ void MyGL::resizeGL(int w, int h) {
 // entities in the scene.
 void MyGL::tick() {
     this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+    m_progLambert.setTime(m_time); // Set time in shader
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
     long long currframe = QDateTime::currentMSecsSinceEpoch();
     m_player.tick(currframe - lastFrame, m_inputs);
     lastFrame = currframe;
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
+    m_time++; // Update time
 }
 
 void MyGL::sendPlayerDataToGUI() const {
