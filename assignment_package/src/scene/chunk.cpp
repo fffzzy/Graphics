@@ -108,7 +108,7 @@ void Chunk::createVBOdata() {
                         BlockType neighborType = getBlockAt(neighborFace.directionVec + currPos);
 
                         // If the neighbor is empty, add vertices to collection
-                        if (neighborType == EMPTY) {
+                        if (neighborType == EMPTY || neighborType == WATER || neighborType == LAVA) {
                             for (VertexData VD : neighborFace.vertices) {
                                 pos.push_back(glm::vec4(currWorldPos, 0.f) + VD.pos);
                                 nor.push_back(glm::vec4(neighborFace.directionVec, 0.f));
