@@ -7,9 +7,18 @@
 #include <unordered_map>
 #include <cstddef>
 
-
+class Chunk;
 //using namespace std;
 
+struct ChunkVBOData {
+    std::vector<glm::vec4> m_vboDataTransparent;
+    std::vector<glm::vec4> m_vboDataOpaque;
+    std::vector<GLuint> m_idxDataTransparent;
+    std::vector<GLuint> m_idxDataOpaque;
+    Chunk* mp_chunk;
+    ChunkVBOData(Chunk* c): m_vboDataTransparent{}, m_vboDataOpaque{}, m_idxDataTransparent{}, m_idxDataOpaque{}, mp_chunk(c)
+    {}
+};
 
 
 // Lets us use any enum class as the key of a
@@ -47,5 +56,12 @@ public:
     void setBlockAt(unsigned int x, unsigned int y, unsigned int z, BlockType t);
     void linkNeighbor(uPtr<Chunk>& neighbor, Direction dir);
     virtual void createVBOdata() override;
-    void bufferVBOdata(std::vector<glm::vec4> interleavedData, std::vector<int> indices);
+//    void bufferVBOdata(std::vector<glm::vec4> interleavedData, std::vector<int> indices);
+
+    void bufferVBOdata(std::vector<glm::vec4> m_vboDataOpaque,
+                       std::vector<GLuint> m_idxDataOpaque,
+                       std::vector<glm::vec4> m_vboDataTransparent,
+                       std::vector<GLuint> m_idxDataTransparent);
+    ChunkVBOData m_chunkVBOData;
+    void generateChunk(int PosX, int PosY);
 };

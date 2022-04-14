@@ -32,6 +32,8 @@ private:
     InputBundle m_inputs; // A collection of variables to be updated in keyPressEvent, mouseMoveEvent, mousePressEvent, etc.
 
     QTimer m_timer; // Timer linked to tick(). Fires approximately 60 times per second.
+    long long m_currFrameTime;
+    long long m_prevFrameTime;
     int m_time; // Time variable used to track time in shader
     long long lastFrame;
     float sensitivity = 0.1f;

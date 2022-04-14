@@ -9,9 +9,11 @@
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_worldAxes(this),
-      m_progLambert(this), m_progFlat(this), m_diffuseTexture(this),
-      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f), m_time(0.f)
-
+      m_progLambert(this), m_progFlat(this), m_progInstanced(this),
+      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain),
+      m_currFrameTime(QDateTime::currentMSecsSinceEpoch()),
+      m_prevFrameTime(QDateTime::currentMSecsSinceEpoch()),
+      accumulativeRotationOnRight(0.f), m_time(0.f)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -98,13 +100,16 @@ void MyGL::resizeGL(int w, int h) {
 // all per-frame actions here, such as performing physics updates on all
 // entities in the scene.
 void MyGL::tick() {
-    this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+//    this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+    m_player.mcr_posPrev = m_player.mcr_position;
+    m_currFrameTime = QDateTime::currentMSecsSinceEpoch();
+    float dT =(m_currFrameTime - m_prevFrameTime) * 0.1f;
+    m_player.tick(dT, m_inputs);
+    m_terrain.multithreadedWork(m_player.mcr_position, m_player.mcr_posPrev, dT);
     m_progLambert.setTime(m_time); // Set time in shader
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
-    long long currframe = QDateTime::currentMSecsSinceEpoch();
-    m_player.tick(currframe - lastFrame, m_inputs);
-    lastFrame = currframe;
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
+    m_prevFrameTime = m_currFrameTime;
     m_time++; // Update time
 }
 
