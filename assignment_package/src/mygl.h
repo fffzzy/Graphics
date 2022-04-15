@@ -2,11 +2,14 @@
 #define MYGL_H
 
 #include "openglcontext.h"
+#include "ppshader.h"
+#include "scene/quad.h"
 #include "shaderprogram.h"
 #include "scene/worldaxes.h"
 #include "scene/camera.h"
 #include "scene/terrain.h"
 #include "scene/player.h"
+#include "framebuffer.h"
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -22,7 +25,7 @@ private:
     ShaderProgram m_progLambert;// A shader program that uses lambertian reflection
     ShaderProgram m_progFlat;// A shader program that uses "flat" reflection (no shadowing at all)
     ShaderProgram m_progInstanced;// A shader program that is designed to be compatible with instanced rendering
-
+    FrameBuffer fb;
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.
 
@@ -31,6 +34,10 @@ private:
     InputBundle m_inputs; // A collection of variables to be updated in keyPressEvent, mouseMoveEvent, mousePressEvent, etc.
 
     QTimer m_timer; // Timer linked to tick(). Fires approximately 60 times per second.
+
+    PPShader* mp_progPostprocessCurrent;
+    Quad m_geomQuad;
+
     long long lastFrame;
     float sensitivity = 0.1f;
     float accumulativeRotationOnRight;
@@ -59,7 +66,10 @@ public:
 
     // Called from paintGL().
     // Calls Terrain::draw().
+    void createShaders();
     void renderTerrain();
+
+    void performPostprocessRenderPass();
 
 protected:
     // Automatically invoked when the user

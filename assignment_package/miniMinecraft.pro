@@ -48,6 +48,8 @@ address_sanitizer {
     QMAKE_LFLAGS += -fsanitize=address
 }
 
-HEADERS +=
+HEADERS += \
+    src/shaderprogram2.h
 
-SOURCES +=
+SOURCES += \
+    src/shaderprogram2.cpp

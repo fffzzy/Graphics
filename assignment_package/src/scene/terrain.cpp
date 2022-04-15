@@ -253,6 +253,44 @@ float perlinNoise(glm::vec2 uv) {
     return surfletSum;
 }
 
+glm::vec3 random3( glm::vec3 p ) {
+    return glm::fract(glm::sin(glm::vec3(glm::dot(p, glm::vec3(127.1, 311.7,114.9)),
+                 glm::dot(p, glm::vec3(269.5,183.3,341.7)),glm::dot(p, glm::vec3(315.2,123.8,235.5))))
+                 * (float)43758.5453);
+}
+
+float surflet3D(glm::vec3 P, glm::vec3 gridPoint) {
+    // Compute falloff function by converting linear distance to a polynomial
+    float distX = abs(P.x - gridPoint.x);
+    float distY = abs(P.y - gridPoint.y);
+    float distZ = abs(P.z - gridPoint.z);
+    float tX = 1 - 6 * pow(distX, 5.f) + 15 * pow(distX, 4.f) - 10 * pow(distX, 3.f);
+    float tY = 1 - 6 * pow(distY, 5.f) + 15 * pow(distY, 4.f) - 10 * pow(distY, 3.f);
+    float tZ = 1 - 6 * pow(distZ, 5.f) + 15 * pow(distZ, 4.f) - 10 * pow(distZ, 3.f);
+    // Get the random vector for the grid point
+    glm::vec3 gradient = 2.f * random3(gridPoint) - glm::vec3(1.f);
+    //cout << glm::to_string(random3(gridPoint));
+    // Get the vector from the grid point to P
+    glm::vec3 diff = P - gridPoint;
+    // Get the value of our height field by dotting grid->P with our gradient
+    float height = glm::dot(diff, gradient);
+    // Scale our height field (i.e. reduce it) by our polynomial falloff function
+    return height * tX * tY * tZ;
+}
+float perlinNoise3D(glm::vec3 uv) {
+    float surfletSum = 0.f;
+    // Iterate over the four integer corners surrounding uv
+    for(int dx = 0; dx <= 1; ++dx) {
+        for(int dy = 0; dy <= 1; ++dy) {
+            for(int dz = 0; dz <= 1; ++dz) {
+                surfletSum += surflet3D(uv, glm::floor(uv) + glm::vec3(dx, dy, dz));
+            }
+
+        }
+    }
+    return surfletSum;
+}
+
 
 float noise1D(int x) {
     double intPart, fractPart;
@@ -345,8 +383,13 @@ void Terrain::setBlock(int x, int z){
 
 
     //comment this out to run faster
-    for(int i = 1; i <= 128; i++){
-        setBlockAt(x, i, z, STONE); // set stone underground
+    for(int i = 118; i <= 128; i++){
+        float p = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
+        if(p > 0){
+            setBlockAt(x, i, z, STONE);
+        }else{
+            setBlockAt(x, i, z, EMPTY);
+        }
     }
 
     if(b > 0.5){
