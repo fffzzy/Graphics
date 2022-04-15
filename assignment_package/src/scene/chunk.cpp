@@ -64,7 +64,7 @@ BlockType Chunk::getBlockAt(glm::vec3 pos) const {
 
 // Does bounds checking with at()
 void Chunk::setBlockAt(unsigned int x, unsigned int y, unsigned int z, BlockType t) {
-    m_blocks.at(x + 16 * y + 16 * 256 * z) = t;
+    m_blocks.at((x % 16) + 16 * (y % 256) + 16 * 256 * (z % 16)) = t;
 }
 
 
@@ -115,7 +115,7 @@ void Chunk::createVBOdata() {
                         BlockType neighborType = getBlockAt(neighborFace.directionVec + currPos);
 
                         // If the neighbor is empty, add vertices to collection
-                        if (neighborType == EMPTY || neighborType == WATER || neighborType == LAVA) {
+                        if (neighborType == EMPTY || ((neighborType == WATER || neighborType == LAVA) && (btAtCurrPos != WATER && btAtCurrPos != LAVA))) {
                             for (VertexData VD : neighborFace.vertices) {
                                 glm::vec2 UVoffset;
 
@@ -202,6 +202,11 @@ void Chunk::createVBOdata() {
         T_interleavedVector.push_back(T_uv[i]);
     }
 
+    this->m_chunkVBOData.m_idxDataOpaque = O_idx;
+    this->m_chunkVBOData.m_vboDataOpaque = O_interleavedVector;
+    this->m_chunkVBOData.m_idxDataTransparent = T_idx;
+    this->m_chunkVBOData.m_vboDataTransparent = T_interleavedVector;
+
     this->bufferVBOdata(O_interleavedVector, O_idx, T_interleavedVector, T_idx);
 
 }
@@ -211,6 +216,7 @@ void Chunk::bufferVBOdata(std::vector<glm::vec4> m_vboDataOpaque,
                           std::vector<glm::vec4> m_vboDataTransparent,
                           std::vector<GLuint> m_idxDataTransparent) {
     this->m_count = m_idxDataOpaque.size();
+    this->m_count_sec = m_idxDataTransparent.size();
 
     generatePos();
     mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufPos);
@@ -227,4 +233,24 @@ void Chunk::bufferVBOdata(std::vector<glm::vec4> m_vboDataOpaque,
     generateIdx();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_idxDataOpaque.size() * sizeof(GLuint), m_idxDataOpaque.data(), GL_STATIC_DRAW);
+
+    generatePos_sec();
+    mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufPos_sec);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, m_vboDataTransparent.size() * sizeof(glm::vec4), m_vboDataTransparent.data(), GL_STATIC_DRAW);
+
+    generateNor_sec();
+    mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufNor_sec);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, m_vboDataTransparent.size() * sizeof(glm::vec4), m_vboDataTransparent.data(), GL_STATIC_DRAW);
+
+    generateUV_sec();
+    mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufUV_sec);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, m_vboDataTransparent.size() * sizeof(glm::vec4), m_vboDataTransparent.data(), GL_STATIC_DRAW);
+
+    generateIdx_sec();
+    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx_sec);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_idxDataTransparent.size() * sizeof(GLuint), m_idxDataTransparent.data(), GL_STATIC_DRAW);
+}
+
+void Chunk::generateChunk(int PosX, int PosZ) {
+    return;
 }

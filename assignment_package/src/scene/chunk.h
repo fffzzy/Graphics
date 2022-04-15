@@ -63,5 +63,6 @@ public:
                        std::vector<glm::vec4> m_vboDataTransparent,
                        std::vector<GLuint> m_idxDataTransparent);
     ChunkVBOData m_chunkVBOData;
-    void generateChunk(int PosX, int PosY);
+    void generateChunk(int PosX, int PosZ);
+    void setBlock(int x, int z); // sets blocks on coordinates x,z
 };

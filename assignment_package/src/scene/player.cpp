@@ -75,17 +75,17 @@ void Player::processInputs(InputBundle &inputs) {
 
     if (isFlight) {
         if (inputs.wPressed) {
-            m_acceleration = acceleration * m_forward;
+            m_acceleration = glm::normalize(acceleration * m_forward);
         } else if (inputs.sPressed) {
-            m_acceleration = -acceleration * m_forward;
+            m_acceleration = glm::normalize(-acceleration * m_forward);
         } else if (inputs.aPressed) {
-            m_acceleration = -acceleration * m_right;
+            m_acceleration = glm::normalize(-acceleration * m_right);
         } else if (inputs.dPressed) {
-            m_acceleration = acceleration * m_right;
+            m_acceleration = glm::normalize(acceleration * m_right);
         } else if (inputs.qPressed) {
-            m_acceleration = -acceleration * m_up;
+            m_acceleration = glm::normalize(-acceleration * m_up);
         } else if (inputs.ePressed) {
-            m_acceleration = acceleration * m_up;
+            m_acceleration = glm::normalize(acceleration * m_up);
         } else {
             m_acceleration = glm::vec3(0.f, 0.f, 0.f);
         }
@@ -134,6 +134,10 @@ void Player::computePhysics(float dT, Terrain &terrain) {
     // Apply friction
     m_velocity.x *= 1 - friction;
     m_velocity.z *= 1 - friction;
+
+    if (isFlight) {
+        m_velocity.y *= 1 - friction;
+    }
 
     // Apply acceleration
     m_velocity += m_acceleration * dT;

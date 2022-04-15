@@ -296,6 +296,32 @@ void ShaderProgram::drawInterleaved(Drawable &d)
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
     if (attrUV  != -1) context->glDisableVertexAttribArray(attrUV);
 
+    // Draw secondary VBO
+    if (d.elemCount_sec() > 0) {
+        if (attrPos != -1 && d.bindPos_sec()) {
+            context->glEnableVertexAttribArray(attrPos);
+            context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4), (void*)0);
+        }
+
+        if (attrNor != -1 && d.bindNor_sec()) {
+            context->glEnableVertexAttribArray(attrNor);
+            context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 3 * sizeof(glm::vec4), (void*)sizeof(glm::vec4));
+        }
+
+        if (attrUV != -1 && d.bindUV_sec()) {
+            context->glEnableVertexAttribArray(attrUV);
+            context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, 3 * sizeof(glm::vec4), (void*) (2 * sizeof(glm::vec4)));
+        }
+
+        // Bind the index buffer and then draw shapes from it.
+        // This invokes the shader program, which accesses the vertex buffers.
+        d.bindIdx_sec();
+        context->glDrawElements(d.drawMode(), d.elemCount_sec(), GL_UNSIGNED_INT, 0);
+
+        if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
+        if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
+        if (attrUV  != -1) context->glDisableVertexAttribArray(attrUV);
+    }
     context->printGLErrorLog();
 }
 

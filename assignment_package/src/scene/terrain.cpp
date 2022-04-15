@@ -179,47 +179,6 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
     }
 }
 
-void Terrain::expandTerrain(int x, int z) {
-
-
-    if (!hasChunkAt(x, z)) {
-        instantiateChunkAt(x, z);
-
-    }
-
-    if (!hasChunkAt(x + 16, z)) {
-        instantiateChunkAt(x + 16, z);
-
-    }
-
-    if (!hasChunkAt(x, z + 16)) {
-        instantiateChunkAt(x, z + 16);
-
-    }
-
-    if (!hasChunkAt(x + 16, z + 16)) {
-        instantiateChunkAt(x + 16, z + 16);
-
-    }
-
-    if (!hasChunkAt(x - 16, z)) {
-        instantiateChunkAt(x - 16, z);
-
-    }
-
-    if (!hasChunkAt(x, z - 16)) {
-        instantiateChunkAt(x, z - 16);
-
-    }
-
-    if (!hasChunkAt(x - 16, z - 16)) {
-        instantiateChunkAt(x - 16, z - 16);
-
-    }
-
-}
-
-
 
 glm::vec2 random2( glm::vec2 p ) {
     return glm::fract(glm::sin(glm::vec2(glm::dot(p, glm::vec2(127.1, 311.7)),

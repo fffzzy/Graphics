@@ -23,7 +23,7 @@ public:
 	bool isFlight;
     float acceleration = 0.1f;
     float jumpSpeed = 50.f;
-    float friction = 0.9f;
+    float friction = 0.7f;
     float g = 0.5f;
 
     glm::vec3 mcr_posPrev;

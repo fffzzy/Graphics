@@ -100,7 +100,6 @@ void MyGL::resizeGL(int w, int h) {
 // all per-frame actions here, such as performing physics updates on all
 // entities in the scene.
 void MyGL::tick() {
-//    this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
     m_player.mcr_posPrev = m_player.mcr_position;
     m_currFrameTime = QDateTime::currentMSecsSinceEpoch();
     float dT =(m_currFrameTime - m_prevFrameTime) * 0.1f;
@@ -136,7 +135,7 @@ void MyGL::paintGL() {
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setModelMatrix(glm::mat4());
 
-    this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+    //this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
 
     m_diffuseTexture.bind(0);
 
