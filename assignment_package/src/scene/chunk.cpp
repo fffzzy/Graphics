@@ -144,6 +144,9 @@ void Chunk::createVBOdata() {
                                     case WATER:
                                         UVoffset = glm::vec2(13, 3);
                                         break;
+                                    case LAVA:
+                                        UVoffset = glm::vec2(13, 1);
+                                        break;
                                     default:
                                         // Other block types are not yet handled, so we default to debug purple
                                         UVoffset = glm::vec2(10, 3);
