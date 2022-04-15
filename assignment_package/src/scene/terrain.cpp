@@ -166,7 +166,9 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
         for(int z = minZ; z < maxZ; z += 16) {
             if (hasChunkAt(x, z)) {
                 const uPtr<Chunk> &chunk = getChunkAt(x, z);
-
+                if(!chunk->hasVBOdata) {
+                    continue;
+                }
                 // Set model matrix to appropriate offset
                 glm::mat4 modelMatrix = glm::mat4(1.f);
                 modelMatrix[3][0] = x;
@@ -377,7 +379,7 @@ void Terrain::checkThreadResults() {
     for(auto& cd: m_chunksThatHaveVBOs) {
         cd.mp_chunk->bufferVBOdata(cd.m_vboDataOpaque, cd.m_idxDataOpaque,
                                    cd.m_vboDataTransparent, cd.m_idxDataTransparent);
-//        cd.mp_chunk->hasVBOdata = true;
+        cd.mp_chunk->hasVBOdata = true;
     }
     m_chunksThatHaveVBOs.clear();
     m_chunksThatHaveVBOsLock.unlock();
@@ -466,8 +468,6 @@ void Terrain::spawnVBOWorker(Chunk* chunkNeedingVBOData) {
     VBOWorker *worker = new VBOWorker(chunkNeedingVBOData, &m_chunksThatHaveVBOs, &m_chunksThatHaveVBOsLock);
     QThreadPool::globalInstance()->start(worker);
 }
-
-
 
 
 

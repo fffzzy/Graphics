@@ -41,7 +41,7 @@ public:
     virtual ~Drawable();
 
     virtual void createVBOdata() = 0; // To be implemented by subclasses. Populates the VBOs of the Drawable.
-    void destroyVBOdata(); // Frees the VBOs of the Drawable.
+    virtual void destroyVBOdata(); // Frees the VBOs of the Drawable.
 
     // Getter functions for various GL data
     virtual GLenum drawMode();

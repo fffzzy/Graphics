@@ -63,6 +63,15 @@ public:
                        std::vector<glm::vec4> m_vboDataTransparent,
                        std::vector<GLuint> m_idxDataTransparent);
     ChunkVBOData m_chunkVBOData;
+    bool hasVBOdata;
     void generateChunk(int PosX, int PosZ);
     void setBlock(int x, int z); // sets blocks on coordinates x,z
+    void destroyVBOdata() override;
+    float WorleyDist(glm::vec2 uv);
+    float fbm(float x);
+    float interpNoise1D(float x);
+    float noise1D(int x);
+    float perlinNoise(glm::vec2 uv);
+    float surflet(glm::vec2 P, glm::vec2 gridPoint);
+    glm::vec2 random2( glm::vec2 p );
 };
