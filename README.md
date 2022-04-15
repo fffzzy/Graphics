@@ -1,6 +1,7 @@
 # mini-minecraft-560fp
 mini-minecraft-560fp created by GitHub Classroom
 
+MILESTONE 1:
 Konstantinos Gkatzonis: Efficient Terrain Rendering and Chunking
 After watching the lectures giving advice on implementing efficient chunking I designed the algorithm for rendering only the faces adjacent to empty blocks. The hard part
 about this section was ensuring that blocks at the edges of a chunk correctly interracted with neighboring chunks during those checks. This required a bit of math and debugging.
@@ -19,3 +20,7 @@ I used inputBundle to store all key inputs. The exception is right click and lef
 
 Our video link:
 https://drive.google.com/file/d/1CJrhafz2W3ZNDQWmeDjgCuYKNflFSwAg/view?usp=sharing
+
+
+MILESTONE 2:
+Konstantinos Gkatzonis: Texturing and Texture Animation
