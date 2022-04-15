@@ -140,7 +140,7 @@ void Player::computePhysics(float dT, Terrain &terrain) {
 
     // Clamp velocity
     m_velocity = glm::clamp(m_velocity, glm::vec3(-50.f, -100.f, -50.f), glm::vec3(50.f, 400.f, 50.f));
-    glm::vec3 move = m_velocity * dT * 0.00003f;
+    glm::vec3 move = m_velocity * dT * 0.0003f;
     if (isFlight) {
         moveAlongVector(move);
     } else {
