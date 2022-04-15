@@ -75,12 +75,15 @@ float fbm(vec3 p) {
 
 void main()
 {
-        // Apply timeshift if UV corresponds to water UV
+        // Apply timeshift if UV corresponds to water and lava UV
         vec2 alteredUV = fs_UV;
         float uvUnit = 1 / 16.f;
         int divFactor = 5;
         int timeStep = u_Time % divFactor;
-        if (alteredUV.x >= 13*uvUnit && alteredUV.y >= 3*uvUnit) {
+
+        // Apply uv transformation
+        if ((alteredUV.x >= 13*uvUnit && alteredUV.y >= 1*uvUnit) &&
+            (alteredUV.x >= 13*uvUnit && alteredUV.y <= 5*uvUnit)) {
             alteredUV.x += timeStep * (uvUnit / divFactor);
         }
 
