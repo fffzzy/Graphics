@@ -155,7 +155,7 @@ void Chunk::createVBOdata() {
                                         UVoffset = glm::vec2(13, 1);
                                         break;
                                     case BEDROCK:
-                                        UVoffset = glm::vec2(15, 1);
+                                        UVoffset = glm::vec2(1, 15);
                                         break;
                                     default:
                                         // Other block types are not yet handled, so we default to debug purple
