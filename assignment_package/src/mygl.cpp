@@ -150,7 +150,7 @@ void MyGL::sendPlayerDataToGUI() const {
 // MyGL's constructor links update() to a timer that fires 60 times per second,
 // so paintGL() called at a rate of 60 frames per second.
 void MyGL::paintGL() {
-    fb.bindFrameBuffer();
+    //fb.bindFrameBuffer();
 
     //if in water or lava slow by 2/3 speed
     if(m_terrain.getBlockAt(m_player.mcr_position) == WATER ||
@@ -180,7 +180,7 @@ void MyGL::paintGL() {
     m_progFlat.draw(m_worldAxes);
     glEnable(GL_DEPTH_TEST);
 
-    performPostprocessRenderPass();
+    //performPostprocessRenderPass();
 }
 
 void MyGL::performPostprocessRenderPass()

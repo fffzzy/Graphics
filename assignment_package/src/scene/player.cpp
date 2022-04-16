@@ -79,9 +79,9 @@ void Player::processInputs(InputBundle &inputs) {
             m_acceleration = glm::vec3(0);
         }
         if (inputs.wPressed) {
-            m_acceleration = 10* acceleration * m_forward;
+            m_acceleration = acceleration * m_forward;
         } else if (inputs.sPressed) {
-            m_acceleration = 10* -acceleration * m_forward;
+            m_acceleration = -acceleration * m_forward;
         } else if (inputs.aPressed) {
             m_acceleration = -acceleration * m_right;
         } else if (inputs.dPressed) {

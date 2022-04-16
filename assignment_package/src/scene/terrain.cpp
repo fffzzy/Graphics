@@ -403,6 +403,7 @@ void Terrain::setBlock(int x, int z){
     //caves
     for(int i = 108; i <= 128; i++){
         float p = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
+
         if(p > 0){
             setBlockAt(x, i, z, STONE);
         }else if (i < 113){ // should be 25 (just for testing)
@@ -433,13 +434,8 @@ void Terrain::setBlock(int x, int z){
         }
     }
     for(int i = f; i < 138; i++){
-        //setBlockAt(x, i, z, WATER); // water 128 - 138
-    }
-    for(int i = 128; i < 138; i++){
         setBlockAt(x, i, z, WATER); // water 128 - 138
     }
-
-
 }
 
 

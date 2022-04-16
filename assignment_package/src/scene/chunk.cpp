@@ -155,11 +155,8 @@ void Chunk::createVBOdata() {
                                         UVoffset = glm::vec2(13, 1);
                                         break;
                                     case BEDROCK:
-                                        col.push_back(glm::vec4(0.f, 0.f,0.f, 0.f));
-                                    break;
-                                    case LAVA:
-                                        col.push_back(glm::vec4(254.f,67.f,42.f, 0.f) / 255.f);
-                                    break;
+                                        UVoffset = glm::vec2(15, 1);
+                                        break;
                                     default:
                                         // Other block types are not yet handled, so we default to debug purple
                                         UVoffset = glm::vec2(10, 3);
