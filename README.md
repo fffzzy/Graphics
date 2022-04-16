@@ -25,6 +25,10 @@ https://drive.google.com/file/d/1CJrhafz2W3ZNDQWmeDjgCuYKNflFSwAg/view?usp=shari
 MILESTONE 2:
 Konstantinos Gkatzonis: Texturing and Texture Animation
 
+Charlie Herrmann: Cave Systems
+
+To implement the caves I created a new Perlin Noise function. This function took in a 3 vector instead of a 2 vector and used 8 surflets instead of 4. I used a decently large grid size to acheive this affect. I also created two new blocks, lava and bedrock. Lava is seen in pools at the bottom of caves and bedrock is seen at the very bottom layer of caves. The player will move more slowly when moving through either lava or water. The player will also sink in both of these. A good attempt was made to create a shader program for water and lava but I wasn't able to get it working. I will continue to work on this for milestone 3. 
+
 Zhouyang Fang: Multithreading
 
 After certain period, main thread would clear the far away region and load nearby region. If Terrain is already existed, it will spawn VBO workers to compute the interleaved buffer and index buffer data, else it would spawn BlockTypeWorkers to generation zone in certain radius. There are four separate vectors to hold opaque and transparent vertex and index data for Chunk VBOs. Currently there are still some bugs in tryExpansion() function which I plan to fix this weekend.
