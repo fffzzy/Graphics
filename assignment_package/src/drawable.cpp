@@ -3,8 +3,10 @@
 
 Drawable::Drawable(OpenGLContext* context)
     : m_count(-1), m_bufIdx(), m_bufPos(), m_bufNor(), m_bufCol(),m_bufUV(),
-      m_idxGenerated(false), m_posGenerated(false), m_norGenerated(false), m_colGenerated(false),
-      m_uvGenerated(false), mp_context(context)
+      m_idxGenerated(false), m_posGenerated(false), m_norGenerated(false), m_colGenerated(false), m_uvGenerated(false),
+      m_count_sec(-1), m_bufIdx_sec(), m_bufPos_sec(), m_bufNor_sec(),
+      m_idxGenerated_sec(false), m_posGenerated_sec(false), m_norGenerated_sec(false),m_uvGenerated(false),
+      mp_context(context)
 {}
 
 Drawable::~Drawable()
@@ -16,10 +18,15 @@ void Drawable::destroyVBOdata()
     mp_context->glDeleteBuffers(1, &m_bufIdx);
     mp_context->glDeleteBuffers(1, &m_bufPos);
     mp_context->glDeleteBuffers(1, &m_bufNor);
-    mp_context->glDeleteBuffers(1, &m_bufCol);
     mp_context->glDeleteBuffers(1, &m_bufUV);
-    m_idxGenerated = m_posGenerated = m_norGenerated = m_colGenerated = m_bufUV = false;
+    mp_context->glDeleteBuffers(1, &m_bufIdx_sec);
+    mp_context->glDeleteBuffers(1, &m_bufPos_sec);
+    mp_context->glDeleteBuffers(1, &m_bufNor_sec);
+    mp_context->glDeleteBuffers(1, &m_bufUV_sec);
+    mp_context->glDeleteBuffers(1, &m_bufCol);
+    m_idxGenerated = m_posGenerated = m_norGenerated = m_colGenerated = m_idxGenerated_sec = m_posGenerated_sec = m_norGenerated_sec = false;
     m_count = -1;
+    m_count_sec = -1;
 }
 
 GLenum Drawable::drawMode()
@@ -36,6 +43,12 @@ GLenum Drawable::drawMode()
 int Drawable::elemCount()
 {
     return m_count;
+}
+
+
+int Drawable::elemCount_sec()
+{
+    return m_count_sec;
 }
 
 void Drawable::generateIdx()
@@ -69,8 +82,37 @@ void Drawable::generateCol()
 void Drawable::generateUV()
 {
     m_uvGenerated = true;
-    // Create a VBO on our GPU and store its handle in bufCol
+    // Create a VBO on our GPU and store its handle in bufUV
     mp_context->glGenBuffers(1, &m_bufUV);
+}
+
+void Drawable::generatePos_sec()
+{
+    m_posGenerated_sec = true;
+    // Create a VBO on our GPU and store its handle in bufPos_sec
+    mp_context->glGenBuffers(1, &m_bufPos_sec);
+}
+
+void Drawable::generateNor_sec()
+{
+    m_norGenerated_sec = true;
+    // Create a VBO on our GPU and store its handle in bufNor_sec
+    mp_context->glGenBuffers(1, &m_bufNor_sec);
+}
+
+void Drawable::generateUV_sec()
+{
+    m_uvGenerated_sec = true;
+    // Create a VBO on our GPU and store its handle in bufUV_sec
+    mp_context->glGenBuffers(1, &m_bufUV_sec);
+}
+
+
+void Drawable::generateIdx_sec()
+{
+    m_idxGenerated_sec = true;
+    // Create a VBO on our GPU and store its handle in bufIdx_sec
+    mp_context->glGenBuffers(1, &m_bufIdx_sec);
 }
 
 bool Drawable::bindIdx()
@@ -105,12 +147,46 @@ bool Drawable::bindCol()
     return m_colGenerated;
 }
 
+
 bool Drawable::bindUV()
 {
     if(m_uvGenerated){
         mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufUV);
     }
     return m_uvGenerated;
+}
+
+
+bool Drawable::bindIdx_sec()
+{
+    if(m_idxGenerated_sec) {
+        mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx_sec);
+    }
+    return m_idxGenerated_sec;
+}
+
+bool Drawable::bindPos_sec()
+{
+    if(m_posGenerated_sec){
+        mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufPos_sec);
+    }
+    return m_posGenerated_sec;
+}
+
+bool Drawable::bindNor_sec()
+{
+    if(m_norGenerated_sec){
+        mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufNor_sec);
+    }
+    return m_norGenerated_sec;
+}
+
+bool Drawable::bindUV_sec()
+{
+    if(m_uvGenerated_sec){
+        mp_context->glBindBuffer(GL_ARRAY_BUFFER, m_bufUV_sec);
+    }
+    return m_uvGenerated_sec;
 }
 
 InstancedDrawable::InstancedDrawable(OpenGLContext *context)

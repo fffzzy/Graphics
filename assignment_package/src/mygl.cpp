@@ -13,8 +13,8 @@ MyGL::MyGL(QWidget *parent)
       m_geomQuad(this),
       fb(this,0,0,0),
       m_worldAxes(this),
-      m_progLambert(this), m_progFlat(this), m_progInstanced(this),
-      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f)
+      m_progLambert(this), m_progFlat(this), m_diffuseTexture(this),
+      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f), m_time(0.f)
 
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -49,6 +49,8 @@ void MyGL::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // Set the color with which the screen is filled at the start of each render call.
     glClearColor(0.37f, 0.74f, 1.0f, 1);
 
@@ -56,6 +58,8 @@ void MyGL::initializeGL()
 
     // Create a Vertex Attribute Object
     glGenVertexArrays(1, &vao);
+    m_diffuseTexture.create(":/textures/minecraft_textures_all.png");
+    m_diffuseTexture.load(0);
 
     fb = FrameBuffer(this, this->width(), this->height(), this->devicePixelRatio());
     fb.create();
@@ -67,7 +71,6 @@ void MyGL::initializeGL()
     m_progLambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     m_progFlat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
-    m_progInstanced.create(":/glsl/instanced.vert.glsl", ":/glsl/lambert.frag.glsl");
 
     // Set a color with which to draw geometry.
     // This will ultimately not be used when you change
@@ -122,11 +125,13 @@ void MyGL::resizeGL(int w, int h) {
 // entities in the scene.
 void MyGL::tick() {
     this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+    m_progLambert.setTime(m_time); // Set time in shader
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
     long long currframe = QDateTime::currentMSecsSinceEpoch();
     m_player.tick(currframe - lastFrame, m_inputs);
     lastFrame = currframe;
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
+    m_time++; // Update time
 }
 
 void MyGL::sendPlayerDataToGUI() const {
@@ -162,9 +167,10 @@ void MyGL::paintGL() {
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setModelMatrix(glm::mat4());
-    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 
     this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+
+    m_diffuseTexture.bind(0);
 
     renderTerrain();
 

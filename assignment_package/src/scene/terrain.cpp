@@ -161,6 +161,8 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
 // model matrix to the proper X and Z translation!
 void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram) {
     GLenum error = glGetError();
+
+    // Draw all opaque elements
     for(int x = minX; x < maxX; x += 16) {
         for(int z = minZ; z < maxZ; z += 16) {
             if (hasChunkAt(x, z)) {
@@ -172,7 +174,24 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
                 modelMatrix[3][2] = z;
                 shaderProgram->setModelMatrix(modelMatrix);
                 chunk->createVBOdata();
-                shaderProgram->drawInterleaved(*chunk.get());
+                shaderProgram->drawInterleaved(*chunk.get(), PRIMARY);
+            }
+        }
+    }
+
+    // Draw all transparent elements
+    for(int x = minX; x < maxX; x += 16) {
+        for(int z = minZ; z < maxZ; z += 16) {
+            if (hasChunkAt(x, z)) {
+                const uPtr<Chunk> &chunk = getChunkAt(x, z);
+
+                // Set model matrix to appropriate offset
+                glm::mat4 modelMatrix = glm::mat4(1.f);
+                modelMatrix[3][0] = x;
+                modelMatrix[3][2] = z;
+                shaderProgram->setModelMatrix(modelMatrix);
+                chunk->createVBOdata();
+                shaderProgram->drawInterleaved(*chunk.get(), SECONDARY);
             }
         }
     }

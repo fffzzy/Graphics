@@ -8,18 +8,30 @@ class Drawable
 {
 protected:
     int m_count;     // The number of indices stored in bufIdx.
+    int m_count_sec;     // The number of indices stored in bufIdx_sec.
     GLuint m_bufIdx; // A Vertex Buffer Object that we will use to store triangle indices (GLuints)
     GLuint m_bufPos; // A Vertex Buffer Object that we will use to store mesh vertices (vec4s)
     GLuint m_bufNor; // A Vertex Buffer Object that we will use to store mesh normals (vec4s)
+    GLuint m_bufUV; // A Vertex Buffer Object that we will use to store UVs (vec2s)
     GLuint m_bufCol; // Can be used to pass per-vertex color information to the shader, but is currently unused.
                    // Instead, we use a uniform vec4 in the shader to set an overall color for the geometry
-    GLuint m_bufUV;
+
+    // Secondary buffers
+    GLuint m_bufIdx_sec; // A Vertex Buffer Object that we will use to store triangle indices (GLuints)
+    GLuint m_bufPos_sec; // A Vertex Buffer Object that we will use to store mesh vertices (vec4s)
+    GLuint m_bufNor_sec; // A Vertex Buffer Object that we will use to store mesh normals (vec4s)
+    GLuint m_bufUV_sec; // A Vertex Buffer Object that we will use to store UVs (vec2s)
 
     bool m_idxGenerated; // Set to TRUE by generateIdx(), returned by bindIdx().
     bool m_posGenerated;
     bool m_norGenerated;
     bool m_colGenerated;
     bool m_uvGenerated;
+
+    bool m_idxGenerated_sec; // Set to TRUE by generateIdx(), returned by bindIdx().
+    bool m_posGenerated_sec;
+    bool m_norGenerated_sec;
+    bool m_uvGenerated_sec;
 
     OpenGLContext* mp_context; // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,
                           // we need to pass our OpenGL context to the Drawable in order to call GL functions
@@ -31,11 +43,12 @@ public:
     virtual ~Drawable();
 
     virtual void createVBOdata() = 0; // To be implemented by subclasses. Populates the VBOs of the Drawable.
-    void destroyVBOdata(); // Frees the VBOs of the Drawable.
+    virtual void destroyVBOdata(); // Frees the VBOs of the Drawable.
 
     // Getter functions for various GL data
     virtual GLenum drawMode();
     int elemCount();
+    int elemCount_sec();
 
     // Call these functions when you want to call glGenBuffers on the buffers stored in the Drawable
     // These will properly set the values of idxBound etc. which need to be checked in ShaderProgram::draw()
@@ -45,11 +58,21 @@ public:
     void generateCol();
     void generateUV();
 
+    void generateIdx_sec();
+    void generatePos_sec();
+    void generateNor_sec();
+    void generateUV_sec();
+
     bool bindIdx();
     bool bindPos();
     bool bindNor();
     bool bindCol();
     bool bindUV();
+
+    bool bindIdx_sec();
+    bool bindPos_sec();
+    bool bindNor_sec();
+    bool bindUV_sec();
 };
 
 // A subclass of Drawable that enables the base code to render duplicates of
