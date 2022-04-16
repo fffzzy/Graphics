@@ -15,6 +15,7 @@ protected:
     GLuint m_bufUV; // A Vertex Buffer Object that we will use to store UVs (vec2s)
     GLuint m_bufCol; // Can be used to pass per-vertex color information to the shader, but is currently unused.
                    // Instead, we use a uniform vec4 in the shader to set an overall color for the geometry
+
     // Secondary buffers
     GLuint m_bufIdx_sec; // A Vertex Buffer Object that we will use to store triangle indices (GLuints)
     GLuint m_bufPos_sec; // A Vertex Buffer Object that we will use to store mesh vertices (vec4s)
@@ -26,6 +27,7 @@ protected:
     bool m_norGenerated;
     bool m_colGenerated;
     bool m_uvGenerated;
+
     bool m_idxGenerated_sec; // Set to TRUE by generateIdx(), returned by bindIdx().
     bool m_posGenerated_sec;
     bool m_norGenerated_sec;
@@ -55,6 +57,7 @@ public:
     void generateNor();
     void generateCol();
     void generateUV();
+
     void generateIdx_sec();
     void generatePos_sec();
     void generateNor_sec();

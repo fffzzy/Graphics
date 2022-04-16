@@ -252,6 +252,7 @@ void ShaderProgram::drawInstanced(InstancedDrawable &d)
 //This function, as its name implies, uses the passed in GL widget
 void ShaderProgram::drawInterleaved(Drawable &d, RenderHelpers renderElement)
 {
+
     useMe();
 
     // Check if the caller has requested the primary VBO to be drawn

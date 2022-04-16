@@ -4,7 +4,6 @@
 #include <QTimer>
 #include <QOpenGLExtraFunctions>
 
-
 class OpenGLContext
     : public QOpenGLWidget,
       public QOpenGLExtraFunctions

@@ -60,10 +60,12 @@ BlockType Chunk::getBlockAt(unsigned int x, unsigned int y, unsigned int z) cons
 // Exists to get rid of compiler warnings about int -> unsigned int implicit conversion
 BlockType Chunk::getBlockAt(int x, int y, int z) const {
     return getBlockAt(static_cast<unsigned int>(x), static_cast<unsigned int>(y), static_cast<unsigned int>(z));
+    //return m_blocks.at(x + 16 * y + 16 * 256 * z);
 }
 
 // Exists to simplify calls by allowing a vector argument
 BlockType Chunk::getBlockAt(glm::vec3 pos) const {
+    //return getBlockAt(static_cast<unsigned int>(pos.x), static_cast<unsigned int>(pos.y), static_cast<unsigned int>(pos.z));
     return getBlockAt(static_cast<unsigned int>(pos.x), static_cast<unsigned int>(pos.y), static_cast<unsigned int>(pos.z));
 }
 
@@ -152,6 +154,12 @@ void Chunk::createVBOdata() {
                                     case LAVA:
                                         UVoffset = glm::vec2(13, 1);
                                         break;
+                                    case BEDROCK:
+                                        col.push_back(glm::vec4(0.f, 0.f,0.f, 0.f));
+                                    break;
+                                    case LAVA:
+                                        col.push_back(glm::vec4(254.f,67.f,42.f, 0.f) / 255.f);
+                                    break;
                                     default:
                                         // Other block types are not yet handled, so we default to debug purple
                                         UVoffset = glm::vec2(10, 3);

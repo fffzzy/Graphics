@@ -1,4 +1,5 @@
 #include "mygl.h"
+#include "scene/terrain.h"
 #include <glm_includes.h>
 
 #include <iostream>
@@ -8,6 +9,9 @@
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
+      m_ppShader(),
+      m_geomQuad(this),
+      fb(this,0,0,0),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_diffuseTexture(this),
       m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f), m_time(0.f)
@@ -57,6 +61,9 @@ void MyGL::initializeGL()
     m_diffuseTexture.create(":/textures/minecraft_textures_all.png");
     m_diffuseTexture.load(0);
 
+    fb = FrameBuffer(this, this->width(), this->height(), this->devicePixelRatio());
+    fb.create();
+
     //Create the instance of the world axes
     m_worldAxes.createVBOdata();
 
@@ -71,6 +78,9 @@ void MyGL::initializeGL()
     // and UV coordinates
     m_progLambert.setGeometryColor(glm::vec4(0,1,0,1));
 
+    createShaders();
+
+
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
     glBindVertexArray(vao);
@@ -78,9 +88,24 @@ void MyGL::initializeGL()
     m_terrain.CreateTestScene();
 }
 
+
+void MyGL::createShaders()
+
+{
+    std::shared_ptr<PPShader> grey = std::make_shared<PPShader>(this);
+    grey->create(":/glsl/post/passthrough.vert.glsl", ":/glsl/post/greyscale.frag.glsl");
+    m_ppShader.push_back(grey);
+    //m_ppShader = std::make_shared<PPShader>(this);
+    //std::shared_ptr<PPShader> grey = std::make_shared<PPShader>(this);
+
+    mp_progPostprocessCurrent = m_ppShader[0].get();
+
+}
+
 void MyGL::resizeGL(int w, int h) {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
+
     m_player.setCameraWidthHeight(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
     glm::mat4 viewproj = m_player.mcr_camera.getViewProj();
 
@@ -88,6 +113,7 @@ void MyGL::resizeGL(int w, int h) {
 
     m_progLambert.setViewProjMatrix(viewproj);
     m_progFlat.setViewProjMatrix(viewproj);
+    fb.resize(this->width(), this->height(), this->devicePixelRatio());
 
     printGLErrorLog();
 }
@@ -124,6 +150,17 @@ void MyGL::sendPlayerDataToGUI() const {
 // MyGL's constructor links update() to a timer that fires 60 times per second,
 // so paintGL() called at a rate of 60 frames per second.
 void MyGL::paintGL() {
+    fb.bindFrameBuffer();
+
+    //if in water or lava slow by 2/3 speed
+    if(m_terrain.getBlockAt(m_player.mcr_position) == WATER ||
+            m_terrain.getBlockAt(m_player.mcr_position) == LAVA){
+        m_player.slow = 0.67;
+    }else{
+        m_player.slow = 1;
+    }
+    glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
+
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -142,7 +179,25 @@ void MyGL::paintGL() {
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progFlat.draw(m_worldAxes);
     glEnable(GL_DEPTH_TEST);
+
+    performPostprocessRenderPass();
 }
+
+void MyGL::performPostprocessRenderPass()
+{
+    // Render the frame buffer as a texture on a screen-size quad
+
+    // Tell OpenGL to render to the viewport's frame buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
+    // Render on the whole framebuffer, complete from the lower left corner to the upper right
+    glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    fb.bindToTextureSlot(0);
+    mp_progPostprocessCurrent->draw(m_geomQuad, 0);
+}
+
 // TODO: Change this so it renders the nine zones of generated
 // terrain that surround the player (refer to Terrain::m_generatedTerrain
 // for more info)
