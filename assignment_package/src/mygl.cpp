@@ -1,4 +1,5 @@
 #include "mygl.h"
+#include "scene/terrain.h"
 #include <glm_includes.h>
 
 #include <iostream>
@@ -8,9 +9,12 @@
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
+      m_ppShader(),
+      m_geomQuad(this),
+      fb(this,0,0,0),
       m_worldAxes(this),
-      m_progLambert(this), m_progFlat(this), m_progInstanced(this),
-      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f)
+      m_progLambert(this), m_progFlat(this), m_diffuseTexture(this),
+      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f), m_time(0.f)
 
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -45,6 +49,8 @@ void MyGL::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // Set the color with which the screen is filled at the start of each render call.
     glClearColor(0.37f, 0.74f, 1.0f, 1);
 
@@ -52,6 +58,11 @@ void MyGL::initializeGL()
 
     // Create a Vertex Attribute Object
     glGenVertexArrays(1, &vao);
+    m_diffuseTexture.create(":/textures/minecraft_textures_all.png");
+    m_diffuseTexture.load(0);
+
+    fb = FrameBuffer(this, this->width(), this->height(), this->devicePixelRatio());
+    fb.create();
 
     //Create the instance of the world axes
     m_worldAxes.createVBOdata();
@@ -60,13 +71,15 @@ void MyGL::initializeGL()
     m_progLambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     m_progFlat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
-    m_progInstanced.create(":/glsl/instanced.vert.glsl", ":/glsl/lambert.frag.glsl");
 
     // Set a color with which to draw geometry.
     // This will ultimately not be used when you change
     // your program to render Chunks with vertex colors
     // and UV coordinates
     m_progLambert.setGeometryColor(glm::vec4(0,1,0,1));
+
+    createShaders();
+
 
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
@@ -75,9 +88,24 @@ void MyGL::initializeGL()
     m_terrain.CreateTestScene();
 }
 
+
+void MyGL::createShaders()
+
+{
+    std::shared_ptr<PPShader> grey = std::make_shared<PPShader>(this);
+    grey->create(":/glsl/post/passthrough.vert.glsl", ":/glsl/post/greyscale.frag.glsl");
+    m_ppShader.push_back(grey);
+    //m_ppShader = std::make_shared<PPShader>(this);
+    //std::shared_ptr<PPShader> grey = std::make_shared<PPShader>(this);
+
+    mp_progPostprocessCurrent = m_ppShader[0].get();
+
+}
+
 void MyGL::resizeGL(int w, int h) {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
+
     m_player.setCameraWidthHeight(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
     glm::mat4 viewproj = m_player.mcr_camera.getViewProj();
 
@@ -85,6 +113,7 @@ void MyGL::resizeGL(int w, int h) {
 
     m_progLambert.setViewProjMatrix(viewproj);
     m_progFlat.setViewProjMatrix(viewproj);
+    fb.resize(this->width(), this->height(), this->devicePixelRatio());
 
     printGLErrorLog();
 }
@@ -96,11 +125,13 @@ void MyGL::resizeGL(int w, int h) {
 // entities in the scene.
 void MyGL::tick() {
     this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+    m_progLambert.setTime(m_time); // Set time in shader
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
     long long currframe = QDateTime::currentMSecsSinceEpoch();
     m_player.tick(currframe - lastFrame, m_inputs);
     lastFrame = currframe;
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
+    m_time++; // Update time
 }
 
 void MyGL::sendPlayerDataToGUI() const {
@@ -119,15 +150,27 @@ void MyGL::sendPlayerDataToGUI() const {
 // MyGL's constructor links update() to a timer that fires 60 times per second,
 // so paintGL() called at a rate of 60 frames per second.
 void MyGL::paintGL() {
+    //fb.bindFrameBuffer();
+
+    //if in water or lava slow by 2/3 speed
+    if(m_terrain.getBlockAt(m_player.mcr_position) == WATER ||
+            m_terrain.getBlockAt(m_player.mcr_position) == LAVA){
+        m_player.slow = 0.67;
+    }else{
+        m_player.slow = 1;
+    }
+    glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
+
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setModelMatrix(glm::mat4());
-    m_progInstanced.setViewProjMatrix(m_player.mcr_camera.getViewProj());
 
     this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+
+    m_diffuseTexture.bind(0);
 
     renderTerrain();
 
@@ -136,7 +179,25 @@ void MyGL::paintGL() {
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progFlat.draw(m_worldAxes);
     glEnable(GL_DEPTH_TEST);
+
+    //performPostprocessRenderPass();
 }
+
+void MyGL::performPostprocessRenderPass()
+{
+    // Render the frame buffer as a texture on a screen-size quad
+
+    // Tell OpenGL to render to the viewport's frame buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
+    // Render on the whole framebuffer, complete from the lower left corner to the upper right
+    glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    fb.bindToTextureSlot(0);
+    mp_progPostprocessCurrent->draw(m_geomQuad, 0);
+}
+
 // TODO: Change this so it renders the nine zones of generated
 // terrain that surround the player (refer to Terrain::m_generatedTerrain
 // for more info)

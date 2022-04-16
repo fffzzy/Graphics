@@ -25,6 +25,7 @@ public:
 	float jumpSpeed = 200.f;
 	float friction = 0.9f;
 	float g = 0.5f;
+    float slow = 1;
 
 
 	void addBlock();
