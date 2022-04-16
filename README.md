@@ -32,3 +32,8 @@ To implement the caves I created a new Perlin Noise function. This function took
 Zhouyang Fang: Multithreading
 
 After certain period, main thread would clear the far away region and load nearby region. If Terrain is already existed, it will spawn VBO workers to compute the interleaved buffer and index buffer data, else it would spawn BlockTypeWorkers to generation zone in certain radius. There are four separate vectors to hold opaque and transparent vertex and index data for Chunk VBOs. Currently there are still some bugs in tryExpansion() function which I plan to fix this weekend.
+
+Videos:
+Walking through water: https://drive.google.com/file/d/1GeBH4xUGa9WlqhQTTIA4RlClwVQxl_xu/view?usp=sharing
+Caves: https://drive.google.com/file/d/1T2zAyBnavTi0_CYtk6KVBUwVr0ICXZHk/view?usp=sharing
+
