@@ -24,3 +24,6 @@ https://drive.google.com/file/d/1CJrhafz2W3ZNDQWmeDjgCuYKNflFSwAg/view?usp=shari
 
 MILESTONE 2:
 Konstantinos Gkatzonis: Texturing and Texture Animation
+
+Zhouyang Fang: Multithreading
+After certain period, main thread would clear the far away region and load nearby region. If Terrain is already existed, it will spawn VBO workers to compute the interleaved buffer and index buffer data, else it would spawn BlockTypeWorkers to generation zone in certain radius. There are four separate vectors to hold opaque and transparent vertex and index data for Chunk VBOs. Currently there are still some bugs in tryExpansion() function which I plan to fix this weekend.
