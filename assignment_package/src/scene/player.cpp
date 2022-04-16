@@ -119,6 +119,9 @@ void Player::processInputs(InputBundle &inputs) {
         // Apply vertical motion
         if (underPlayer == EMPTY) {
             m_acceleration.y = -g * m_up.y;
+        } else if (underPlayer == WATER || underPlayer == LAVA) {
+            m_acceleration.y = -(g/5) * m_up.y;
+            m_velocity.y = glm::clamp(m_velocity.y, -1.f, 0.f);
         } else {
             m_acceleration.y = 0;
             if (inputs.spacePressed) {
