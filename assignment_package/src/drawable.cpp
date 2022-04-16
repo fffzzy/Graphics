@@ -2,7 +2,7 @@
 #include <glm_includes.h>
 
 Drawable::Drawable(OpenGLContext* context)
-    : m_count(-1), m_bufIdx(), m_bufPos(), m_bufNor(), m_bufCol(),
+    : m_count(-1), m_bufIdx(), m_bufPos(), m_bufNor(), m_bufCol(),m_bufUV(),
       m_idxGenerated(false), m_posGenerated(false), m_norGenerated(false), m_colGenerated(false),
       m_uvGenerated(false), mp_context(context)
 {}
@@ -18,7 +18,7 @@ void Drawable::destroyVBOdata()
     mp_context->glDeleteBuffers(1, &m_bufNor);
     mp_context->glDeleteBuffers(1, &m_bufCol);
     mp_context->glDeleteBuffers(1, &m_bufUV);
-    m_idxGenerated = m_posGenerated = m_norGenerated = m_colGenerated = false;
+    m_idxGenerated = m_posGenerated = m_norGenerated = m_colGenerated = m_bufUV = false;
     m_count = -1;
 }
 

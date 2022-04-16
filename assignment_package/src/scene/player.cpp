@@ -39,7 +39,7 @@ bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terra
         // If currCell contains something other than EMPTY, return
         // curr_t
         BlockType cellType = terrain.getBlockAt(currCell.x, currCell.y, currCell.z);
-        if(cellType != EMPTY && cellType != WATER) {
+        if(cellType != EMPTY && cellType != WATER && cellType != LAVA) {
             *out_blockHit = currCell;
             *out_dist = glm::min(maxLen, curr_t);
             return true;
@@ -144,7 +144,7 @@ void Player::computePhysics(float dT, Terrain &terrain) {
 
     // Clamp velocity
     m_velocity = glm::clamp(m_velocity, glm::vec3(-50.f, -100.f, -50.f), glm::vec3(50.f, 400.f, 50.f));
-    glm::vec3 move = m_velocity * dT * 0.00003f;
+    glm::vec3 move = m_velocity * dT * 0.00003f * slow;
     if (isFlight) {
         moveAlongVector(move);
     } else {

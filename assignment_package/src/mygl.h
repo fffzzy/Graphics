@@ -38,6 +38,8 @@ private:
     PPShader* mp_progPostprocessCurrent;
     Quad m_geomQuad;
 
+    std::vector<std::shared_ptr<PPShader>> m_ppShader;
+
     long long lastFrame;
     float sensitivity = 0.1f;
     float accumulativeRotationOnRight;

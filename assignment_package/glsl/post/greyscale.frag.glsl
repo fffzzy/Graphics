@@ -1,9 +1,9 @@
 #version 150
 
 
-out vec3 color;
+//out vec4 color;
 
-uniform sampler2D u_RenderedTexture;
+//uniform sampler2D u_RenderedTexture;
 
 void main()
 {
@@ -14,5 +14,5 @@ void main()
     //float gray = 0.21*C[0] + 0.72*C[1] + 0.07*C[2];
     //float vignette = (sqrt(0.5) - dist)/(sqrt(0.5));
     //gray*= vignette;
-    color = vec3(0,0,0);
+    gl_FragColor = vec4(1.0,0.0,0.0,1.0);
 }

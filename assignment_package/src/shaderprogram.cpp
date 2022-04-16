@@ -238,6 +238,7 @@ void ShaderProgram::drawInstanced(InstancedDrawable &d)
 //This function, as its name implies, uses the passed in GL widget
 void ShaderProgram::drawInterleaved(Drawable &d)
 {
+
     useMe();
 
     if(d.elemCount() < 0) {

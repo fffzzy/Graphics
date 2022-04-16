@@ -21,7 +21,6 @@ SOURCES += \
     $$PWD/scene/camera.cpp \
     $$PWD/playerinfo.cpp \
     $$PWD/scene/chunk.cpp \
-    $$PWD/shaderprogram2.cpp \
     $$PWD/sprogram.cpp \
     $$PWD/texture.cpp
 
@@ -40,7 +39,6 @@ HEADERS += \
     $$PWD/openglcontext.h \
     $$PWD/scene/terrain.h \
     $$PWD/scene/worldaxes.h \
-    $$PWD/shaderprogram2.h \
     $$PWD/smartpointerhelp.h \
     $$PWD/glm_includes.h \
     $$PWD/scene/entity.h \

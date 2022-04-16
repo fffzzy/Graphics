@@ -160,7 +160,7 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
 // it draws each Chunk with the given ShaderProgram, remembering to set the
 // model matrix to the proper X and Z translation!
 void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram) {
-
+    GLenum error = glGetError();
     for(int x = minX; x < maxX; x += 16) {
         for(int z = minZ; z < maxZ; z += 16) {
             if (hasChunkAt(x, z)) {
@@ -180,10 +180,8 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
 
 void Terrain::expandTerrain(int x, int z) {
 
-
     if (!hasChunkAt(x, z)) {
         instantiateChunkAt(x, z);
-
     }
 
     if (!hasChunkAt(x + 16, z)) {
@@ -277,6 +275,7 @@ float surflet3D(glm::vec3 P, glm::vec3 gridPoint) {
     // Scale our height field (i.e. reduce it) by our polynomial falloff function
     return height * tX * tY * tZ;
 }
+
 float perlinNoise3D(glm::vec3 uv) {
     float surfletSum = 0.f;
     // Iterate over the four integer corners surrounding uv
@@ -382,15 +381,18 @@ void Terrain::setBlock(int x, int z){
                      f,254),0); // interpolated value
 
 
-    //comment this out to run faster
-    for(int i = 118; i <= 128; i++){
+    //caves
+    for(int i = 108; i <= 128; i++){
         float p = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
         if(p > 0){
             setBlockAt(x, i, z, STONE);
+        }else if (i < 113){ // should be 25 (just for testing)
+            setBlockAt(x, i, z, LAVA);
         }else{
             setBlockAt(x, i, z, EMPTY);
         }
     }
+    setBlockAt(x, 107, z, BEDROCK); // bottom layer is bedrock
 
     if(b > 0.5){
         for(int i = 129; i <= f; i++){
@@ -412,8 +414,13 @@ void Terrain::setBlock(int x, int z){
         }
     }
     for(int i = f; i < 138; i++){
+        //setBlockAt(x, i, z, WATER); // water 128 - 138
+    }
+    for(int i = 128; i < 138; i++){
         setBlockAt(x, i, z, WATER); // water 128 - 138
     }
+
+
 }
 
 

@@ -9,6 +9,7 @@
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
+      m_ppShader(),
       m_geomQuad(this),
       fb(this,0,0,0),
       m_worldAxes(this),
@@ -85,12 +86,16 @@ void MyGL::initializeGL()
 }
 
 
-
 void MyGL::createShaders()
+
 {
     std::shared_ptr<PPShader> grey = std::make_shared<PPShader>(this);
     grey->create(":/glsl/post/passthrough.vert.glsl", ":/glsl/post/greyscale.frag.glsl");
-    mp_progPostprocessCurrent = grey.get();
+    m_ppShader.push_back(grey);
+    //m_ppShader = std::make_shared<PPShader>(this);
+    //std::shared_ptr<PPShader> grey = std::make_shared<PPShader>(this);
+
+    mp_progPostprocessCurrent = m_ppShader[0].get();
 
 }
 
@@ -140,13 +145,15 @@ void MyGL::sendPlayerDataToGUI() const {
 // MyGL's constructor links update() to a timer that fires 60 times per second,
 // so paintGL() called at a rate of 60 frames per second.
 void MyGL::paintGL() {
-    //fb.bindFrameBuffer();
-    if(m_terrain.getBlockAt(m_player.mcr_position) == WATER){
-        m_player.slow = 0.2;
+    fb.bindFrameBuffer();
+
+    //if in water or lava slow by 2/3 speed
+    if(m_terrain.getBlockAt(m_player.mcr_position) == WATER ||
+            m_terrain.getBlockAt(m_player.mcr_position) == LAVA){
+        m_player.slow = 0.67;
     }else{
         m_player.slow = 1;
     }
-    std::cout << (0 + m_terrain.getBlockAt(m_player.mcr_position)) << " hello \n";
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
 
     // Clear the screen so that we only see newly drawn images
@@ -167,7 +174,7 @@ void MyGL::paintGL() {
     m_progFlat.draw(m_worldAxes);
     glEnable(GL_DEPTH_TEST);
 
-    //performPostprocessRenderPass();
+    performPostprocessRenderPass();
 }
 
 void MyGL::performPostprocessRenderPass()
@@ -181,8 +188,8 @@ void MyGL::performPostprocessRenderPass()
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //fb.bindToTextureSlot(0);
-    //mp_progPostprocessCurrent->draw(m_geomQuad, 0);
+    fb.bindToTextureSlot(0);
+    mp_progPostprocessCurrent->draw(m_geomQuad, 0);
 }
 
 // TODO: Change this so it renders the nine zones of generated
