@@ -119,7 +119,7 @@ void Chunk::createVBOdata() {
                     for (BlockFace neighborFace : adjacentFaces) {
                         BlockType neighborType = getBlockAt(neighborFace.directionVec + currPos);
 
-                        // If the neighbor is empty, add vertices to collection
+                        // If the neighbor is empty, not undetermined and this block is a non liquid block touching liquid, add vertices to collection
                         if (neighborType == EMPTY || ((neighborType == WATER || neighborType == LAVA) && (btAtCurrPos != WATER && btAtCurrPos != LAVA))) {
                             for (VertexData VD : neighborFace.vertices) {
                                 glm::vec2 UVoffset;
