@@ -40,7 +40,9 @@ struct BlockFace {
     {}
 };
 
-#define BLK_UV 1/16.f
+#define BLK_UVX * 0.03125
+#define BLK_UVY * 0.03125
+#define BLK_UV 0.03125
 
 const static std::array<BlockFace, 6> adjacentFaces {
             // +X
