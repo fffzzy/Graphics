@@ -152,13 +152,6 @@ void MyGL::sendPlayerDataToGUI() const {
 void MyGL::paintGL() {
     //fb.bindFrameBuffer();
 
-    //if in water or lava slow by 2/3 speed
-    if(m_terrain.getBlockAt(m_player.mcr_position) == WATER ||
-            m_terrain.getBlockAt(m_player.mcr_position) == LAVA){
-        m_player.slow = 0.67;
-    }else{
-        m_player.slow = 1;
-    }
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
 
     // Clear the screen so that we only see newly drawn images
