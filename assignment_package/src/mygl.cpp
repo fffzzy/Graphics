@@ -77,7 +77,7 @@ void MyGL::initializeGL()
     // using multiple VAOs, we can just bind one once.
     glBindVertexArray(vao);
 
-    m_terrain.CreateTestScene();
+//    m_terrain.CreateTestScene();
 }
 
 void MyGL::resizeGL(int w, int h) {
@@ -104,6 +104,7 @@ void MyGL::tick() {
     m_currFrameTime = QDateTime::currentMSecsSinceEpoch();
     float dT =(m_currFrameTime - m_prevFrameTime) * 0.1f;
     m_player.tick(dT, m_inputs);
+//    cout << "tick()" << endl;
     m_terrain.multithreadedWork(m_player.mcr_position, m_player.mcr_posPrev, dT);
     m_progLambert.setTime(m_time); // Set time in shader
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
