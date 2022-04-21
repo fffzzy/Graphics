@@ -1,7 +1,8 @@
 #include "chunk.h"
+#include <iostream>
 
-
-Chunk::Chunk(OpenGLContext* mp_context) : Drawable(mp_context), m_blocks(),
+Chunk::Chunk(OpenGLContext* mp_context, int x, int z) : Drawable(mp_context),
+    m_coords(x, z), m_blocks(),
     m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}},
     m_chunkVBOData(this), hasVBOdata(false)
 {
@@ -210,7 +211,7 @@ void Chunk::createVBOdata() {
     this->m_chunkVBOData.m_idxDataTransparent = T_idx;
     this->m_chunkVBOData.m_vboDataTransparent = T_interleavedVector;
 
-    this->bufferVBOdata(O_interleavedVector, O_idx, T_interleavedVector, T_idx);
+//    this->bufferVBOdata(O_interleavedVector, O_idx, T_interleavedVector, T_idx);
 
 }
 
@@ -418,5 +419,19 @@ void Chunk::setBlock(int x, int z){
     }
     for(int i = f; i < 138; i++){
         setBlockAt(x, i, z, WATER); // water 128 - 138
+    }
+}
+
+void Chunk::generateTestTerrain(int PosX, int PosZ) {
+    for(int x = 0; x < 16; ++x) {
+        for(int z = 0; z < 16; ++z) {
+//            std::cout << "x " << x << ", z" << z << std::endl;
+            if((x + z) % 2 == 0) {
+                setBlockAt(x, 128, z, DIRT);
+            }
+            else {
+                setBlockAt( x, 128, z, STONE);
+            }
+        }
     }
 }
