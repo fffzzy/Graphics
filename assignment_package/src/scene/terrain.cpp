@@ -166,7 +166,7 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
         for(int z = minZ; z < maxZ; z += 16) {
             if (hasChunkAt(x, z)) {
                 const uPtr<Chunk> &chunk = getChunkAt(x, z);
-                std::cout << "draw " << glm::to_string(chunk->m_coords) << " addr " << chunk.get() << std::endl;
+                // std::cout << "draw " << glm::to_string(chunk->m_coords) << " addr " << chunk.get() << std::endl;
                 if(!chunk->hasVBOdata) {
                     continue;
                 }
@@ -382,7 +382,7 @@ void Terrain::checkThreadResults() {
         cd.mp_chunk->bufferVBOdata(cd.m_vboDataOpaque, cd.m_idxDataOpaque,
                                    cd.m_vboDataTransparent, cd.m_idxDataTransparent);
         cd.mp_chunk->hasVBOdata = true;
-        std::cout << "chunk at " << glm::to_string(cd.mp_chunk->m_coords) << " address " << cd.mp_chunk << std::endl;
+        // std::cout << "chunk at " << glm::to_string(cd.mp_chunk->m_coords) << " address " << cd.mp_chunk << std::endl;
     }
     m_chunksThatHaveVBOs.clear();
     m_chunksThatHaveVBOsLock.unlock();
