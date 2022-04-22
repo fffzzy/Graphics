@@ -93,6 +93,8 @@ void Player::processInputs(InputBundle &inputs) {
         } else {
             m_acceleration = glm::vec3(0.f, 0.f, 0.f);
         }
+
+        m_acceleration *= 10;
     } else {
         BlockType underPlayer = mcr_terrain.getBlockAt(m_position.x, m_position.y - 0.5, m_position.z);
         if (inputs.wPressed) {
@@ -115,6 +117,8 @@ void Player::processInputs(InputBundle &inputs) {
             m_acceleration.x = 0;
             m_acceleration.z = 0;
         }
+
+        m_acceleration *= 10;
 
         // Apply vertical motion
         if (underPlayer == EMPTY) {

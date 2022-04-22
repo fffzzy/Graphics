@@ -20,13 +20,13 @@ public:
 	const Camera& mcr_camera;
 
 
-	bool isFlight;
-  float acceleration = 1.f;
-  float jumpSpeed = 50.f;
-  float friction = 0.01f;
-  float g = 0.5f;
+    bool isFlight;
+    float acceleration = 100.f;
+    float jumpSpeed = 200.f;
+    float friction = 0.1f;
+    float g = 10.f;
 
-  glm::vec3 mcr_posPrev;
+    glm::vec3 mcr_posPrev;
 
 	void addBlock();
 	void removeBlock();
