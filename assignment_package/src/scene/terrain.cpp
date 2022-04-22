@@ -177,7 +177,8 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
                 modelMatrix[3][0] = x;
                 modelMatrix[3][2] = z;
                 shaderProgram->setModelMatrix(modelMatrix);
-                shaderProgram->drawInterleaved(*chunk.get());
+                shaderProgram->drawInterleaved(*chunk.get(), PRIMARY);
+                shaderProgram->drawInterleaved(*chunk.get(), SECONDARY);
             }
         }
     }

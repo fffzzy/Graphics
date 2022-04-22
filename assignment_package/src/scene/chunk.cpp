@@ -262,7 +262,7 @@ void Chunk::bufferVBOdata(std::vector<glm::vec4> m_vboDataOpaque,
     generateIdx_sec();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx_sec);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_idxDataTransparent.size() * sizeof(GLuint), m_idxDataTransparent.data(), GL_STATIC_DRAW);
-
+}
 void Chunk::generateChunk(int PosX, int PosZ){
     // Populate blocks
     for(int i = 0; i < 16; i++){
@@ -270,11 +270,6 @@ void Chunk::generateChunk(int PosX, int PosZ){
             setBlock(PosX + i, PosZ + j);
         }
     }
-}
-
-void Chunk::destroyVBOdata() {
-    Drawable::destroyVBOdata();
-    this->hasVBOdata = false;
 }
 
 glm::vec2 Chunk::random2( glm::vec2 p ) {
