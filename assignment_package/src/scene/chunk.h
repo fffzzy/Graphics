@@ -75,6 +75,9 @@ public:
     float noise1D(int x);
     float perlinNoise(glm::vec2 uv);
     float surflet(glm::vec2 P, glm::vec2 gridPoint);
+    float surflet3D(glm::vec3 P, glm::vec3 gridPoint);
+    float perlinNoise3D(glm::vec3 uv);
+    glm::vec3 random3( glm::vec3 p );
     glm::vec2 random2( glm::vec2 p );
     void generateTestTerrain(int PosX, int PosZ);
 };

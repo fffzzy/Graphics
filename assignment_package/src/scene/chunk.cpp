@@ -221,7 +221,7 @@ void Chunk::createVBOdata() {
     this->m_chunkVBOData.m_idxDataTransparent = T_idx;
     this->m_chunkVBOData.m_vboDataTransparent = T_interleavedVector;
 
-    this->bufferVBOdata(O_interleavedVector, O_idx, T_interleavedVector, T_idx);
+    //this->bufferVBOdata(O_interleavedVector, O_idx, T_interleavedVector, T_idx);
 }
 
 void Chunk::bufferVBOdata(std::vector<glm::vec4> m_vboDataOpaque,
@@ -262,7 +262,7 @@ void Chunk::bufferVBOdata(std::vector<glm::vec4> m_vboDataOpaque,
     generateIdx_sec();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx_sec);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_idxDataTransparent.size() * sizeof(GLuint), m_idxDataTransparent.data(), GL_STATIC_DRAW);
-
+}
 void Chunk::generateChunk(int PosX, int PosZ){
     // Populate blocks
     for(int i = 0; i < 16; i++){
@@ -270,11 +270,6 @@ void Chunk::generateChunk(int PosX, int PosZ){
             setBlock(PosX + i, PosZ + j);
         }
     }
-}
-
-void Chunk::destroyVBOdata() {
-    Drawable::destroyVBOdata();
-    this->hasVBOdata = false;
 }
 
 glm::vec2 Chunk::random2( glm::vec2 p ) {
@@ -367,6 +362,47 @@ float Chunk::WorleyDist(glm::vec2 uv) {
     return minDist;
 }
 
+glm::vec3 Chunk::random3( glm::vec3 p ) {
+    return glm::fract(glm::sin(glm::vec3(glm::dot(p, glm::vec3(127.1, 311.7,114.9)),
+                 glm::dot(p, glm::vec3(269.5,183.3,341.7)),glm::dot(p, glm::vec3(315.2,123.8,235.5))))
+                 * (float)43758.5453);
+}
+
+
+float Chunk::surflet3D(glm::vec3 P, glm::vec3 gridPoint) {
+    // Compute falloff function by converting linear distance to a polynomial
+    float distX = abs(P.x - gridPoint.x);
+    float distY = abs(P.y - gridPoint.y);
+    float distZ = abs(P.z - gridPoint.z);
+    float tX = 1 - 6 * pow(distX, 5.f) + 15 * pow(distX, 4.f) - 10 * pow(distX, 3.f);
+    float tY = 1 - 6 * pow(distY, 5.f) + 15 * pow(distY, 4.f) - 10 * pow(distY, 3.f);
+    float tZ = 1 - 6 * pow(distZ, 5.f) + 15 * pow(distZ, 4.f) - 10 * pow(distZ, 3.f);
+    // Get the random vector for the grid point
+    glm::vec3 gradient = 2.f * random3(gridPoint) - glm::vec3(1.f);
+    //cout << glm::to_string(random3(gridPoint));
+    // Get the vector from the grid point to P
+    glm::vec3 diff = P - gridPoint;
+    // Get the value of our height field by dotting grid->P with our gradient
+    float height = glm::dot(diff, gradient);
+    // Scale our height field (i.e. reduce it) by our polynomial falloff function
+    return height * tX * tY * tZ;
+}
+
+float Chunk::perlinNoise3D(glm::vec3 uv) {
+    float surfletSum = 0.f;
+    // Iterate over the four integer corners surrounding uv
+    for(int dx = 0; dx <= 1; ++dx) {
+        for(int dy = 0; dy <= 1; ++dy) {
+            for(int dz = 0; dz <= 1; ++dz) {
+                surfletSum += surflet3D(uv, glm::floor(uv) + glm::vec3(dx, dy, dz));
+            }
+
+        }
+    }
+    return surfletSum;
+}
+
+
 void Chunk::setBlock(int x, int z){
     float b = perlinNoise(glm::vec2(x/300.0, z/300.0))+0.5;
 
@@ -401,10 +437,19 @@ void Chunk::setBlock(int x, int z){
                      f,254),0); // interpolated value
 
 
-    //comment this out to run faster
-    for(int i = 1; i <= 128; i++){
-        setBlockAt(x, i, z, STONE); // set stone underground
+    //caves
+    for(int i = 108; i <= 128; i++){
+        float p = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
+
+        if(p > 0){
+            setBlockAt(x, i, z, STONE);
+        }else if (i < 113){ // should be 25 (just for testing)
+            setBlockAt(x, i, z, LAVA);
+        }else{
+            setBlockAt(x, i, z, EMPTY);
+        }
     }
+    setBlockAt(x, 107, z, BEDROCK); // bottom layer is bedrock
 
     if(b > 0.5){
         for(int i = 129; i <= f; i++){
