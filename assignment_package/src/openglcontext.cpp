@@ -72,6 +72,7 @@ void OpenGLContext::debugContextVersion()
 void OpenGLContext::printGLErrorLog()
 {
     GLenum error = glGetError();
+
     if (error != GL_NO_ERROR) {
         std::cerr << "OpenGL error " << error << ": ";
         const char *e =

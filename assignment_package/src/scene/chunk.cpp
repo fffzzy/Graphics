@@ -9,6 +9,11 @@ Chunk::Chunk(OpenGLContext* mp_context, int x, int z) : Drawable(mp_context),
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
 
+void Chunk::destroyVBOdata() {
+    Drawable::destroyVBOdata();
+    this->hasVBOdata = false;
+}
+
 // Does bounds checking with at()
 BlockType Chunk::getBlockAt(unsigned int x, unsigned int y, unsigned int z) const {
     // Check for limits
@@ -56,10 +61,12 @@ BlockType Chunk::getBlockAt(unsigned int x, unsigned int y, unsigned int z) cons
 // Exists to get rid of compiler warnings about int -> unsigned int implicit conversion
 BlockType Chunk::getBlockAt(int x, int y, int z) const {
     return getBlockAt(static_cast<unsigned int>(x), static_cast<unsigned int>(y), static_cast<unsigned int>(z));
+    //return m_blocks.at(x + 16 * y + 16 * 256 * z);
 }
 
 // Exists to simplify calls by allowing a vector argument
 BlockType Chunk::getBlockAt(glm::vec3 pos) const {
+    //return getBlockAt(static_cast<unsigned int>(pos.x), static_cast<unsigned int>(pos.y), static_cast<unsigned int>(pos.z));
     return getBlockAt(static_cast<unsigned int>(pos.x), static_cast<unsigned int>(pos.y), static_cast<unsigned int>(pos.z));
 }
 
@@ -115,7 +122,7 @@ void Chunk::createVBOdata() {
                     for (BlockFace neighborFace : adjacentFaces) {
                         BlockType neighborType = getBlockAt(neighborFace.directionVec + currPos);
 
-                        // If the neighbor is empty, add vertices to collection
+                        // If the neighbor is empty, not undetermined and this block is a non liquid block touching liquid, add vertices to collection
                         if (neighborType == EMPTY || ((neighborType == WATER || neighborType == LAVA) && (btAtCurrPos != WATER && btAtCurrPos != LAVA))) {
                             for (VertexData VD : neighborFace.vertices) {
                                 glm::vec2 UVoffset;
@@ -147,6 +154,9 @@ void Chunk::createVBOdata() {
                                         break;
                                     case LAVA:
                                         UVoffset = glm::vec2(13, 1);
+                                        break;
+                                    case BEDROCK:
+                                        UVoffset = glm::vec2(1, 15);
                                         break;
                                     default:
                                         // Other block types are not yet handled, so we default to debug purple
@@ -211,8 +221,7 @@ void Chunk::createVBOdata() {
     this->m_chunkVBOData.m_idxDataTransparent = T_idx;
     this->m_chunkVBOData.m_vboDataTransparent = T_interleavedVector;
 
-//    this->bufferVBOdata(O_interleavedVector, O_idx, T_interleavedVector, T_idx);
-
+    this->bufferVBOdata(O_interleavedVector, O_idx, T_interleavedVector, T_idx);
 }
 
 void Chunk::bufferVBOdata(std::vector<glm::vec4> m_vboDataOpaque,
@@ -253,7 +262,6 @@ void Chunk::bufferVBOdata(std::vector<glm::vec4> m_vboDataOpaque,
     generateIdx_sec();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx_sec);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_idxDataTransparent.size() * sizeof(GLuint), m_idxDataTransparent.data(), GL_STATIC_DRAW);
-}
 
 void Chunk::generateChunk(int PosX, int PosZ){
     // Populate blocks

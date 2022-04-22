@@ -2,10 +2,10 @@
 #include <glm_includes.h>
 
 Drawable::Drawable(OpenGLContext* context)
-    : m_count(-1), m_bufIdx(), m_bufPos(), m_bufNor(), m_bufCol(),
-      m_idxGenerated(false), m_posGenerated(false), m_norGenerated(false), m_colGenerated(false),
+    : m_count(-1), m_bufIdx(), m_bufPos(), m_bufNor(), m_bufCol(),m_bufUV(),
+      m_idxGenerated(false), m_posGenerated(false), m_norGenerated(false), m_colGenerated(false), m_uvGenerated(false),
       m_count_sec(-1), m_bufIdx_sec(), m_bufPos_sec(), m_bufNor_sec(),
-      m_idxGenerated_sec(false), m_posGenerated_sec(false), m_norGenerated_sec(false),
+      m_idxGenerated_sec(false), m_posGenerated_sec(false), m_norGenerated_sec(false), m_uvGenerated_sec(false),
       mp_context(context)
 {}
 

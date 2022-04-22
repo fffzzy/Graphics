@@ -68,7 +68,7 @@ public:
     bool hasVBOdata;
     void generateChunk(int PosX, int PosZ);
     void setBlock(int x, int z); // sets blocks on coordinates x,z
-    void destroyVBOdata() override;
+    virtual void destroyVBOdata() override;
     float WorleyDist(glm::vec2 uv);
     float fbm(float x);
     float interpNoise1D(float x);

@@ -2,12 +2,15 @@ INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
 SOURCES += \
+    $$PWD/framebuffer.cpp \
     $$PWD/la.cpp \
     $$PWD/main.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/mygl.cpp \
     $$PWD/blocktypeworker.cpp \
     $$PWD/vboworker.cpp \
+    $$PWD/ppshader.cpp \
+    $$PWD/scene/quad.cpp \
     $$PWD/shaderprogram.cpp \
     $$PWD/drawable.cpp \
     $$PWD/cameracontrolshelp.cpp \
@@ -20,15 +23,19 @@ SOURCES += \
     $$PWD/scene/camera.cpp \
     $$PWD/playerinfo.cpp \
     $$PWD/scene/chunk.cpp \
+    $$PWD/sprogram.cpp \
     $$PWD/texture.cpp
 
 HEADERS += \
+    $$PWD/framebuffer.h \
     $$PWD/la.h \
     $$PWD/mainwindow.h \
     $$PWD/mygl.h \
     $$PWD/blocktypeworker.h \
     $$PWD/scene/chunkhelpers.h \
     $$PWD/vboworker.h \
+    $$PWD/ppshader.h \
+    $$PWD/scene/quad.h \
     $$PWD/shaderprogram.h \
     $$PWD/drawable.h \
     $$PWD/cameracontrolshelp.h \
@@ -43,4 +50,5 @@ HEADERS += \
     $$PWD/scene/camera.h \
     $$PWD/playerinfo.h \
     $$PWD/scene/chunk.h \
+    $$PWD/sprogram.h \
     $$PWD/texture.h

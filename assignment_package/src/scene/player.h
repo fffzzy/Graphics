@@ -21,13 +21,12 @@ public:
 
 
 	bool isFlight;
-    float acceleration = 1.f;
-    float jumpSpeed = 50.f;
-    float friction = 0.01f;
-    float g = 0.5f;
+  float acceleration = 1.f;
+  float jumpSpeed = 50.f;
+  float friction = 0.01f;
+  float g = 0.5f;
 
-    glm::vec3 mcr_posPrev;
-
+  glm::vec3 mcr_posPrev;
 
 	void addBlock();
 	void removeBlock();

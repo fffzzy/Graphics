@@ -7,6 +7,7 @@
 
 #include "drawable.h"
 
+enum RenderHelpers {PRIMARY, SECONDARY};
 
 class ShaderProgram
 {
@@ -45,7 +46,7 @@ public:
     // Draw the given object to our screen multiple times using instanced rendering
     void drawInstanced(InstancedDrawable &d);
     // Draw the given object using interleaved rendering
-    void drawInterleaved(Drawable &d);
+    void drawInterleaved(Drawable &d, RenderHelpers renderElement);
     // Function to set time
     void setTime(int t);
     // Utility function used in create()

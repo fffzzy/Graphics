@@ -39,7 +39,7 @@ bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terra
         // If currCell contains something other than EMPTY, return
         // curr_t
         BlockType cellType = terrain.getBlockAt(currCell.x, currCell.y, currCell.z);
-        if(cellType != EMPTY) {
+        if(cellType != EMPTY && cellType != WATER && cellType != LAVA) {
             *out_blockHit = currCell;
             *out_dist = glm::min(maxLen, curr_t);
             return true;
@@ -74,6 +74,10 @@ void Player::processInputs(InputBundle &inputs) {
 //    m_camera.RecomputeAttributes(inputs.mouseX, inputs.mouseY);
 
     if (isFlight) {
+        if(inputs.spacePressed){
+            m_velocity = glm::vec3(0);
+            m_acceleration = glm::vec3(0);
+        }
         if (inputs.wPressed) {
             m_acceleration = glm::normalize(acceleration * m_forward);
         } else if (inputs.sPressed) {
@@ -115,6 +119,9 @@ void Player::processInputs(InputBundle &inputs) {
         // Apply vertical motion
         if (underPlayer == EMPTY) {
             m_acceleration.y = -g * m_up.y;
+        } else if (underPlayer == WATER || underPlayer == LAVA) {
+            m_acceleration.y = -(g/5) * m_up.y;
+            m_velocity.y = glm::clamp(m_velocity.y, -1.f, 0.f);
         } else {
             m_acceleration.y = 0;
             if (inputs.spacePressed) {

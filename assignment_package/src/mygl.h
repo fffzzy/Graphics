@@ -2,11 +2,14 @@
 #define MYGL_H
 
 #include "openglcontext.h"
+#include "ppshader.h"
+#include "scene/quad.h"
 #include "shaderprogram.h"
 #include "scene/worldaxes.h"
 #include "scene/camera.h"
 #include "scene/terrain.h"
 #include "scene/player.h"
+#include "framebuffer.h"
 #include "texture.h"
 
 #include <QOpenGLVertexArrayObject>
@@ -22,6 +25,7 @@ private:
     WorldAxes m_worldAxes; // A wireframe representation of the world axes. It is hard-coded to sit centered at (32, 128, 32).
     ShaderProgram m_progLambert;// A shader program that uses lambertian reflection
     ShaderProgram m_progFlat;// A shader program that uses "flat" reflection (no shadowing at all)
+    FrameBuffer fb;
     Texture m_diffuseTexture; // A Texture object used to draw the diffuse texture of the blocks
 
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
@@ -34,7 +38,14 @@ private:
     QTimer m_timer; // Timer linked to tick(). Fires approximately 60 times per second.
     long long m_currFrameTime;
     long long m_prevFrameTime;
+
+    PPShader* mp_progPostprocessCurrent;
+    Quad m_geomQuad;
+
+    std::vector<std::shared_ptr<PPShader>> m_ppShader;
+
     int m_time; // Time variable used to track time in shader
+
     long long lastFrame;
     float sensitivity = 0.1f;
     float accumulativeRotationOnRight;
@@ -63,7 +74,10 @@ public:
 
     // Called from paintGL().
     // Calls Terrain::draw().
+    void createShaders();
     void renderTerrain();
+
+    void performPostprocessRenderPass();
 
 protected:
     // Automatically invoked when the user
