@@ -156,7 +156,6 @@ bool Drawable::bindUV()
     return m_uvGenerated;
 }
 
-
 bool Drawable::bindIdx_sec()
 {
     if(m_idxGenerated_sec) {

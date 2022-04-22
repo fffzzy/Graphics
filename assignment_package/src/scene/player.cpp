@@ -53,7 +53,7 @@ bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terra
 Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
-      mcr_camera(m_camera), isFlight(true)
+      mcr_camera(m_camera), isFlight(true), mcr_posPrev(0,0,0)
 {}
 
 Player::~Player()
@@ -79,17 +79,17 @@ void Player::processInputs(InputBundle &inputs) {
             m_acceleration = glm::vec3(0);
         }
         if (inputs.wPressed) {
-            m_acceleration = acceleration * m_forward;
+            m_acceleration = glm::normalize(acceleration * m_forward);
         } else if (inputs.sPressed) {
-            m_acceleration = -acceleration * m_forward;
+            m_acceleration = glm::normalize(-acceleration * m_forward);
         } else if (inputs.aPressed) {
-            m_acceleration = -acceleration * m_right;
+            m_acceleration = glm::normalize(-acceleration * m_right);
         } else if (inputs.dPressed) {
-            m_acceleration = acceleration * m_right;
+            m_acceleration = glm::normalize(acceleration * m_right);
         } else if (inputs.qPressed) {
-            m_acceleration = -acceleration * m_up;
+            m_acceleration = glm::normalize(-acceleration * m_up);
         } else if (inputs.ePressed) {
-            m_acceleration = acceleration * m_up;
+            m_acceleration = glm::normalize(acceleration * m_up);
         } else {
             m_acceleration = glm::vec3(0.f, 0.f, 0.f);
         }
@@ -142,12 +142,16 @@ void Player::computePhysics(float dT, Terrain &terrain) {
     m_velocity.x *= 1 - friction;
     m_velocity.z *= 1 - friction;
 
+    if (isFlight) {
+        m_velocity.y *= 1 - friction;
+    }
+
     // Apply acceleration
     m_velocity += m_acceleration * dT;
 
     // Clamp velocity
     m_velocity = glm::clamp(m_velocity, glm::vec3(-50.f, -100.f, -50.f), glm::vec3(50.f, 400.f, 50.f));
-    glm::vec3 move = m_velocity * dT * 0.00003f * slow;
+    glm::vec3 move = m_velocity * dT * 0.0003f;
     if (isFlight) {
         moveAlongVector(move);
     } else {

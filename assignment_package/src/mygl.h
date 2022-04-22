@@ -36,6 +36,8 @@ private:
     InputBundle m_inputs; // A collection of variables to be updated in keyPressEvent, mouseMoveEvent, mousePressEvent, etc.
 
     QTimer m_timer; // Timer linked to tick(). Fires approximately 60 times per second.
+    long long m_currFrameTime;
+    long long m_prevFrameTime;
 
     PPShader* mp_progPostprocessCurrent;
     Quad m_geomQuad;

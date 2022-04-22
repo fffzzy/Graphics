@@ -7,6 +7,9 @@
 #include <unordered_set>
 #include "shaderprogram.h"
 #include "cube.h"
+#include "blocktypeworker.h"
+#include "vboworker.h"
+#include <QThreadPool>
 
 
 //using namespace std;
@@ -53,6 +56,13 @@ private:
 
     OpenGLContext* mp_context;
 
+    std::vector<Chunk*> m_chunksThatHaveBlockData;
+    QMutex m_chunksThatHaveBlockDataLock;
+
+    std::vector<ChunkVBOData> m_chunksThatHaveVBOs;
+    QMutex m_chunksThatHaveVBOsLock;
+    float m_tryExpansionTimer;
+
 public:
     Terrain(OpenGLContext *context);
     ~Terrain();
@@ -84,12 +94,17 @@ public:
     // ShaderProgram
     void draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram);
 
-    // Expands terrain by a chunk if the player is 16 blocks away from the edge of the current terrain
-    void expandTerrain(int x, int z);
-
     void setBlock(int x, int z);
 
     // Initializes the Chunks that store the 64 x 256 x 64 block scene you
     // see when the base code is run.
     void CreateTestScene();
+    void spawnVBOWorkers(const vector<Chunk*> &chunksNeedingVBOs);
+    void checkThreadResults();
+    void multithreadedWork(glm::vec3 playerPos, glm::vec3 playerPosPrev, float dT);
+    void tryExpansion(glm::vec3 playerPos, glm::vec3 playerPosPrev);
+    QSet<int64_t> terrainZonesBoarderingZone(glm::ivec2 zone);
+    bool terrainZoneExists(int x, int z) const;
+    void spawnBlockTypeWorker(int64_t zoneToGenerate);
+    void spawnVBOWorker(Chunk* chunkNeedingVBOData);
 };
