@@ -269,11 +269,11 @@ void Chunk::bufferVBOdata(std::vector<glm::vec4> m_vboDataOpaque,
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufIdx_sec);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_idxDataTransparent.size() * sizeof(GLuint), m_idxDataTransparent.data(), GL_STATIC_DRAW);
 }
-void Chunk::generateChunk(int PosX, int PosZ){
+void Chunk::generateChunk(){
     // Populate blocks
     for(int i = 0; i < 16; i++){
         for(int j = 0; j < 16; j++){
-            setBlock(PosX + i, PosZ + j);
+            setBlock(this->m_coords.x + i, this->m_coords.y + j);
         }
     }
 }
@@ -478,19 +478,5 @@ void Chunk::setBlock(int x, int z){
     }
     for(int i = f; i < 138; i++){
         setBlockAt(x, i, z, WATER); // water 128 - 138
-    }
-}
-
-void Chunk::generateTestTerrain(int PosX, int PosZ) {
-    for(int x = 0; x < 16; ++x) {
-        for(int z = 0; z < 16; ++z) {
-//            std::cout << "x " << x << ", z" << z << std::endl;
-            if((x + z) % 2 == 0) {
-                setBlockAt(x, 128, z, DIRT);
-            }
-            else {
-                setBlockAt( x, 128, z, STONE);
-            }
-        }
     }
 }

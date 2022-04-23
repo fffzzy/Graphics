@@ -13,8 +13,7 @@ void BlockTypeWorker::run()
 {
     for (auto &chunk : chunks)
     {
-//        chunk->generateTestTerrain(PosX, PosY);
-        chunk->generateChunk(PosX, PosY);
+        chunk->generateChunk();
         chunksThatHaveBlockDataLock->lock();
         chunksThatHaveBlockData->push_back(chunk);
         chunksThatHaveBlockDataLock->unlock();

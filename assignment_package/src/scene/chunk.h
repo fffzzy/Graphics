@@ -70,7 +70,7 @@ public:
                        std::vector<GLuint> m_idxDataTransparent);
     ChunkVBOData m_chunkVBOData;
     bool hasVBOdata;
-    void generateChunk(int PosX, int PosZ);
+    void generateChunk();
     void setBlock(int x, int z); // sets blocks on coordinates x,z
     virtual void destroyVBOdata() override;
     float WorleyDist(glm::vec2 uv);
@@ -83,5 +83,4 @@ public:
     float perlinNoise3D(glm::vec3 uv);
     glm::vec3 random3( glm::vec3 p );
     glm::vec2 random2( glm::vec2 p );
-    void generateTestTerrain(int PosX, int PosZ);
 };

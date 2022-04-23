@@ -79,40 +79,40 @@ void Player::processInputs(InputBundle &inputs) {
             m_acceleration = glm::vec3(0);
         }
         if (inputs.wPressed) {
-            m_acceleration = glm::normalize(acceleration * m_forward);
+            m_acceleration = (acceleration * m_forward);
         } else if (inputs.sPressed) {
-            m_acceleration = glm::normalize(-acceleration * m_forward);
+            m_acceleration = (-acceleration * m_forward);
         } else if (inputs.aPressed) {
-            m_acceleration = glm::normalize(-acceleration * m_right);
+            m_acceleration = (-acceleration * m_right);
         } else if (inputs.dPressed) {
-            m_acceleration = glm::normalize(acceleration * m_right);
+            m_acceleration = (acceleration * m_right);
         } else if (inputs.qPressed) {
-            m_acceleration = glm::normalize(-acceleration * m_up);
+            m_acceleration = (-acceleration * m_up);
         } else if (inputs.ePressed) {
-            m_acceleration = glm::normalize(acceleration * m_up);
+            m_acceleration = (acceleration * m_up);
         } else {
             m_acceleration = glm::vec3(0.f, 0.f, 0.f);
         }
 
-        m_acceleration *= 10;
+        m_acceleration *= 40;
     } else {
         BlockType underPlayer = mcr_terrain.getBlockAt(m_position.x, m_position.y - 0.5, m_position.z);
         if (inputs.wPressed) {
             glm::vec3 tempAcc = acceleration * m_forward;
             tempAcc.y = 0;
-            m_acceleration = glm::normalize(tempAcc);
+            m_acceleration = tempAcc;
         } else if (inputs.sPressed) {
             glm::vec3 tempAcc = -acceleration * m_forward;
             tempAcc.y = 0;
-            m_acceleration = glm::normalize(tempAcc);
+            m_acceleration = (tempAcc);
         } else if (inputs.aPressed) {
             glm::vec3 tempAcc = -acceleration * m_right;
             tempAcc.y = 0;
-            m_acceleration = glm::normalize(tempAcc);
+            m_acceleration = (tempAcc);
         } else if (inputs.dPressed) {
             glm::vec3 tempAcc = acceleration * m_right;
             tempAcc.y = 0;
-            m_acceleration = glm::normalize(tempAcc);
+            m_acceleration = (tempAcc);
         } else {
             m_acceleration.x = 0;
             m_acceleration.z = 0;
@@ -154,7 +154,11 @@ void Player::computePhysics(float dT, Terrain &terrain) {
     m_velocity += m_acceleration * dT;
 
     // Clamp velocity
-    m_velocity = glm::clamp(m_velocity, glm::vec3(-50.f, -200.f, -50.f), glm::vec3(50.f, 400.f, 50.f));
+    if (isFlight) {
+        m_velocity = glm::clamp(m_velocity, glm::vec3(-400.f, -400.f, -400.f), glm::vec3(400.f, 400.f, 50.f));
+    } else {
+        m_velocity = glm::clamp(m_velocity, glm::vec3(-50.f, -200.f, -50.f), glm::vec3(50.f, 400.f, 50.f));
+    }
     glm::vec3 move = m_velocity * dT * 0.0003f;
     if (isFlight) {
         moveAlongVector(move);
