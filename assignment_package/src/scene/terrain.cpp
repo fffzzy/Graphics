@@ -102,7 +102,7 @@ const uPtr<Chunk>& Terrain::getChunkAt(int x, int z) const {
     return m_chunks.at(toKey(16 * xFloor, 16 * zFloor));
 }
 
-void Terrain::setBlockAt(int x, int y, int z, BlockType t)
+void Terrain::setBlockAt(int x, int y, int z, BlockType t, CallerType ct)
 {
     if(hasChunkAt(x, z)) {
         uPtr<Chunk> &c = getChunkAt(x, z);
@@ -111,6 +111,12 @@ void Terrain::setBlockAt(int x, int y, int z, BlockType t)
                       static_cast<unsigned int>(y),
                       static_cast<unsigned int>(z - chunkOrigin.y),
                       t);
+        if (ct == PLAYER) {
+            c->destroyVBOdata();
+            c->createVBOdata();
+            c->hasVBOdata = true;
+            c->bufferVBOdata(c->m_chunkVBOData.m_vboDataOpaque, c->m_chunkVBOData.m_idxDataOpaque, c->m_chunkVBOData.m_vboDataTransparent, c->m_chunkVBOData.m_idxDataTransparent);
+        }
     }
     else {
         throw std::out_of_range("Coordinates " + std::to_string(x) +
@@ -178,6 +184,24 @@ void Terrain::draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shader
                 modelMatrix[3][2] = z;
                 shaderProgram->setModelMatrix(modelMatrix);
                 shaderProgram->drawInterleaved(*chunk.get(), PRIMARY);
+            }
+        }
+    }
+
+    // Draw all transparent elements
+    for(int x = minX; x < maxX; x += 16) {
+        for(int z = minZ; z < maxZ; z += 16) {
+            if (hasChunkAt(x, z)) {
+                const uPtr<Chunk> &chunk = getChunkAt(x, z);
+                // std::cout << "draw " << glm::to_string(chunk->m_coords) << " addr " << chunk.get() << std::endl;
+                if(!chunk->hasVBOdata) {
+                    continue;
+                }
+                // Set model matrix to appropriate offset
+                glm::mat4 modelMatrix = glm::mat4(1.f);
+                modelMatrix[3][0] = x;
+                modelMatrix[3][2] = z;
+                shaderProgram->setModelMatrix(modelMatrix);
                 shaderProgram->drawInterleaved(*chunk.get(), SECONDARY);
             }
         }

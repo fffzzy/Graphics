@@ -7,6 +7,10 @@
 #include <unordered_map>
 #include <cstddef>
 
+enum CallerTypeC {
+    SYSTEM_C, PLAYER_C
+};
+
 class Chunk;
 //using namespace std;
 
@@ -55,7 +59,7 @@ public:
     BlockType getBlockAt(unsigned int x, unsigned int y, unsigned int z) const;
     BlockType getBlockAt(int x, int y, int z) const;
     BlockType getBlockAt(glm::vec3 pos) const;
-    void setBlockAt(unsigned int x, unsigned int y, unsigned int z, BlockType t);
+    void setBlockAt(unsigned int x, unsigned int y, unsigned int z, BlockType t, CallerTypeC ct = SYSTEM_C);
     void linkNeighbor(uPtr<Chunk>& neighbor, Direction dir);
     virtual void createVBOdata() override;
     //void bufferVBOdata(std::vector<glm::vec4> interleavedData, std::vector<int> indices);

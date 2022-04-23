@@ -18,6 +18,10 @@
 int64_t toKey(int x, int z);
 glm::ivec2 toCoords(int64_t k);
 
+enum CallerType {
+    SYSTEM, PLAYER
+};
+
 // The container class for all of the Chunks in the game.
 // Ultimately, while Terrain will always store all Chunks,
 // not all Chunks will be drawn at any given time as the world
@@ -87,7 +91,7 @@ public:
     // Given a world-space coordinate (which may have negative
     // values) set the block at that point in space to the
     // given type.
-    void setBlockAt(int x, int y, int z, BlockType t);
+    void setBlockAt(int x, int y, int z, BlockType t, CallerType ct = SYSTEM);
 
     // Draws every Chunk that falls within the bounding box
     // described by the min and max coords, using the provided

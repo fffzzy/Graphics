@@ -71,8 +71,14 @@ BlockType Chunk::getBlockAt(glm::vec3 pos) const {
 }
 
 // Does bounds checking with at()
-void Chunk::setBlockAt(unsigned int x, unsigned int y, unsigned int z, BlockType t) {
+void Chunk::setBlockAt(unsigned int x, unsigned int y, unsigned int z, BlockType t, CallerTypeC ct) {
     m_blocks.at((x % 16) + 16 * (y % 256) + 16 * 256 * (z % 16)) = t;
+    if (ct == PLAYER_C) {
+        this->destroyVBOdata();
+        this->createVBOdata();
+        this->bufferVBOdata(this->m_chunkVBOData.m_vboDataOpaque, this->m_chunkVBOData.m_idxDataOpaque, this->m_chunkVBOData.m_vboDataTransparent, this->m_chunkVBOData.m_idxDataTransparent);
+        this->hasVBOdata = true;
+    }
 }
 
 

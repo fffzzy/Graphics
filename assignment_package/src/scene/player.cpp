@@ -154,7 +154,7 @@ void Player::computePhysics(float dT, Terrain &terrain) {
     m_velocity += m_acceleration * dT;
 
     // Clamp velocity
-    m_velocity = glm::clamp(m_velocity, glm::vec3(-50.f, -100.f, -50.f), glm::vec3(50.f, 400.f, 50.f));
+    m_velocity = glm::clamp(m_velocity, glm::vec3(-50.f, -200.f, -50.f), glm::vec3(50.f, 400.f, 50.f));
     glm::vec3 move = m_velocity * dT * 0.0003f;
     if (isFlight) {
         moveAlongVector(move);
@@ -213,7 +213,7 @@ void Player::addBlock() {
                           static_cast<unsigned int>(out_blockHit.z - chunkOrigin.y))) == EMPTY) {
             c->setBlockAt(static_cast<unsigned int>(out_blockHit.x - chunkOrigin.x),
                                  static_cast<unsigned int>(out_blockHit.y),
-                                 static_cast<unsigned int>(out_blockHit.z - chunkOrigin.y), STONE);
+                                 static_cast<unsigned int>(out_blockHit.z - chunkOrigin.y), STONE, PLAYER_C);
         }
     }
 }
@@ -223,7 +223,7 @@ void Player::removeBlock() {
     glm::ivec3 out_blockHit = glm::ivec3();
     bool isBlock = gridMarch(m_camera.mcr_position, 3.f * m_forward, mcr_terrain, &out_dist, &out_blockHit);
     if (isBlock) {
-        mcr_terrain.setBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z, EMPTY);
+        mcr_terrain.setBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z, EMPTY, PLAYER);
     }
 
 }
