@@ -98,11 +98,6 @@ public:
     // ShaderProgram
     void draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram);
 
-    void setBlock(int x, int z);
-
-    // Initializes the Chunks that store the 64 x 256 x 64 block scene you
-    // see when the base code is run.
-    void CreateTestScene();
     void spawnVBOWorkers(const vector<Chunk*> &chunksNeedingVBOs);
     void checkThreadResults();
     void multithreadedWork(glm::vec3 playerPos, glm::vec3 playerPosPrev, float dT);
