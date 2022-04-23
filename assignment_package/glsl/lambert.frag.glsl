@@ -78,7 +78,7 @@ void main()
         // Apply timeshift if UV corresponds to water and lava UV
         vec2 alteredUV = fs_UV;
         float uvUnit = 1 / 16.f;
-        int divFactor = 5;
+        int divFactor = 30;
         int timeStep = u_Time % divFactor;
 
         // Apply uv transformation
