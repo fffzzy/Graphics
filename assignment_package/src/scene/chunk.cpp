@@ -334,7 +334,7 @@ float Chunk::interpNoise1D(float x) {
 float Chunk::fbm(float x) {
     float total = 0;
     float persistence = 0.5f;
-    int octaves = 8;
+    int octaves = 3;
     float freq = 2.f;
     float amp = 0.5f;
     for(int i = 1; i <= octaves; i++) {
@@ -348,7 +348,7 @@ float Chunk::fbm(float x) {
 
 //Worley Distance function used for generating hill biomes
 float Chunk::WorleyDist(glm::vec2 uv) {
-    float grid = 2.0;
+    float grid = 1.0;
     uv *= grid; // Now the space is 10x10 instead of 1x1. Change this to any number you want.
     glm::vec2 uvInt = glm::floor(uv);
     glm::vec2 uvFract = glm::fract(uv);
@@ -461,7 +461,7 @@ void Chunk::setBlock(int x, int z){
     }
     setBlockAt(x, 107, z, BEDROCK); // bottom layer is bedrock
 
-    if(b > 0.5){
+    if(b > 0.42){
         for(int i = 129; i <= f; i++){
             if(i == f && f >= 200){
                 setBlockAt(x, i, z, SNOW); // top of mountain
