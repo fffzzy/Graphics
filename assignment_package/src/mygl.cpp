@@ -14,7 +14,7 @@ MyGL::MyGL(QWidget *parent)
       fb(this,0,0,0),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_diffuseTexture(this),
-      m_terrain(this), m_player(glm::vec3(32.f, 200.f, 32.f), m_terrain),
+      m_terrain(this), m_player(glm::vec3(0.f, 200.f, 0.f), m_terrain),
       m_currFrameTime(QDateTime::currentMSecsSinceEpoch()),
       m_prevFrameTime(QDateTime::currentMSecsSinceEpoch()),
       accumulativeRotationOnRight(0.f), m_time(0.f)
@@ -168,7 +168,6 @@ void MyGL::paintGL() {
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setModelMatrix(glm::mat4());
 
-    //this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
 
     m_diffuseTexture.bind(0);
 
@@ -202,11 +201,12 @@ void MyGL::performPostprocessRenderPass()
 // terrain that surround the player (refer to Terrain::m_generatedTerrain
 // for more info)
 void MyGL::renderTerrain() {
-    int xmin = 16 * (glm::floor(this->m_player.mcr_position.x / 16.f) - 1);
-    int xmax = 16 * (glm::floor(this->m_player.mcr_position.x / 16.f) + 2);
+    int xmin = 16 * (glm::floor(this->m_player.mcr_position.x / 16.f) - 15);
+    int xmax = 16 * (glm::floor(this->m_player.mcr_position.x / 16.f) + 16);
 
-    int zmin = 16 * (glm::floor(this->m_player.mcr_position.z / 16.f) - 1);
-    int zmax = 16 * (glm::floor(this->m_player.mcr_position.z / 16.f) + 2);
+    int zmin = 16 * (glm::floor(this->m_player.mcr_position.z / 16.f) - 15);
+    int zmax = 16 * (glm::floor(this->m_player.mcr_position.z / 16.f) + 16);
+    //m_terrain.
     m_terrain.draw(xmin, xmax, zmin, zmax, &m_progLambert);
 }
 
