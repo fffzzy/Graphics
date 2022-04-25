@@ -21,7 +21,7 @@ public:
 
 
     bool isFlight;
-    float acceleration = 100.f;
+    float acceleration = 30.f;
     float jumpSpeed = 200.f;
     float friction = 0.1f;
     float g = 10.f;
