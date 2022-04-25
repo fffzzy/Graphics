@@ -300,6 +300,7 @@ float Chunk::surflet(glm::vec2 P, glm::vec2 gridPoint) {
     return height * tX * tY;
 }
 
+//perlin noise function, used in biome generation
 float Chunk::perlinNoise(glm::vec2 uv) {
     float surfletSum = 0.f;
     // Iterate over the four integer corners surrounding uv
@@ -329,7 +330,7 @@ float Chunk::interpNoise1D(float x) {
     float v2 = noise1D(intX+1);
     return v1 + fractX*(v2-v1);
 }
-
+//fractial brownian noise used for mountain biomes
 float Chunk::fbm(float x) {
     float total = 0;
     float persistence = 0.5f;
@@ -345,6 +346,7 @@ float Chunk::fbm(float x) {
     return total;
 }
 
+//Worley Distance function used for generating hill biomes
 float Chunk::WorleyDist(glm::vec2 uv) {
     float grid = 2.0;
     uv *= grid; // Now the space is 10x10 instead of 1x1. Change this to any number you want.
@@ -368,13 +370,14 @@ float Chunk::WorleyDist(glm::vec2 uv) {
     return minDist;
 }
 
+//used by surflet3D
 glm::vec3 Chunk::random3( glm::vec3 p ) {
     return glm::fract(glm::sin(glm::vec3(glm::dot(p, glm::vec3(127.1, 311.7,114.9)),
                  glm::dot(p, glm::vec3(269.5,183.3,341.7)),glm::dot(p, glm::vec3(315.2,123.8,235.5))))
                  * (float)43758.5453);
 }
 
-
+//used by perlinNoise3D
 float Chunk::surflet3D(glm::vec3 P, glm::vec3 gridPoint) {
     // Compute falloff function by converting linear distance to a polynomial
     float distX = abs(P.x - gridPoint.x);
@@ -394,6 +397,7 @@ float Chunk::surflet3D(glm::vec3 P, glm::vec3 gridPoint) {
     return height * tX * tY * tZ;
 }
 
+//perlin noise function used to generate caves
 float Chunk::perlinNoise3D(glm::vec3 uv) {
     float surfletSum = 0.f;
     // Iterate over the four integer corners surrounding uv
@@ -408,7 +412,7 @@ float Chunk::perlinNoise3D(glm::vec3 uv) {
     return surfletSum;
 }
 
-
+// given an x and z cord, sets all block types for all y values in that column
 void Chunk::setBlock(int x, int z){
     float b = perlinNoise(glm::vec2(x/300.0, z/300.0))+0.5;
 
