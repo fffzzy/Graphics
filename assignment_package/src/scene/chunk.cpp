@@ -453,10 +453,10 @@ void Chunk::setBlock(int x, int z){
 
     // Calulate mountain heightfield
     float perlin = (perlinNoise(glm::vec2(x/64.0 ,z/64.0) ) + 0.5);
-    float fbmNoise = fbm(perlin);
+    float fbmNoise = fbm(perlin,0.5f,1);
     float mountain = -508*fbmNoise + 203.2 ;
     mountain = std::max(std::min(
-                     mountain,127.f),0.f); // mountain height
+                     mountain,180.f),0.f); // mountain height
     mountain+=128;
 
     // Calculate grassland heightfield
