@@ -79,17 +79,17 @@ void Player::processInputs(InputBundle &inputs) {
             m_acceleration = glm::vec3(0);
         }
         if (inputs.wPressed) {
-            m_acceleration = (acceleration * m_forward);
+            m_acceleration = (acceleration * glm::vec3(1,0,0));
         } else if (inputs.sPressed) {
-            m_acceleration = (-acceleration * m_forward);
-        } else if (inputs.aPressed) {
-            m_acceleration = (-acceleration * m_right);
+            m_acceleration = (-acceleration * glm::vec3(1,0,0));
         } else if (inputs.dPressed) {
-            m_acceleration = (acceleration * m_right);
+            m_acceleration = (-acceleration * glm::vec3(0,0,1));
+        } else if (inputs.aPressed) {
+            m_acceleration = (acceleration * glm::vec3(0,0,100));
         } else if (inputs.qPressed) {
-            m_acceleration = (-acceleration * m_up);
+            m_acceleration = (-acceleration * glm::vec3(0,1,0));
         } else if (inputs.ePressed) {
-            m_acceleration = (acceleration * m_up);
+            m_acceleration = (acceleration * glm::vec3(0,1,0));
         } else {
             m_acceleration = glm::vec3(0.f, 0.f, 0.f);
         }

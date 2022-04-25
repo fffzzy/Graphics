@@ -44,6 +44,7 @@ private:
 
     std::vector<std::shared_ptr<PPShader>> m_ppShader;
 
+
     int m_time; // Time variable used to track time in shader
 
     long long lastFrame;

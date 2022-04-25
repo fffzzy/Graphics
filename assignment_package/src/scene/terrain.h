@@ -67,6 +67,12 @@ private:
     QMutex m_chunksThatHaveVBOsLock;
     float m_tryExpansionTimer;
 
+    std::vector<RiverLine> riverLines;
+
+    std::unordered_set<std::pair<int,int>, HashPair, Compare> riverPlaced;
+
+
+
 public:
     Terrain(OpenGLContext *context);
     ~Terrain();
@@ -106,4 +112,5 @@ public:
     bool terrainZoneExists(int x, int z) const;
     void spawnBlockTypeWorker(int64_t zoneToGenerate);
     void spawnVBOWorker(Chunk* chunkNeedingVBOData);
+    void generateRiverLines(glm::vec2 p, float r, int i);
 };

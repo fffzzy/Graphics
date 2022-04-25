@@ -5,10 +5,21 @@
 #include <math.h>
 #include <algorithm>
 
+
+void Terrain::generateRiverLines(glm::vec2 p, float r, int i){
+    glm::vec2 newP = glm::vec2(p[0] + 30*sin(r*3.14159/180.0), p[1] + 10*cos(r*3.14159/180.0));
+    riverLines.push_back(RiverLine(p, newP, 1));
+    if(i > 0){
+        generateRiverLines(newP, r + 30, i-1);
+        generateRiverLines(newP, r - 30, i-1);
+    }
+}
 Terrain::Terrain(OpenGLContext *context)
     : m_chunks(), m_generatedTerrain(), mp_context(context),
-      m_tryExpansionTimer(0.f)
-{}
+      m_tryExpansionTimer(0.f), riverLines(), riverPlaced()
+{
+    //generateRiverLines(glm::vec2(35,35), 0, 4);
+}
 
 Terrain::~Terrain() {
     for (std::pair<const long long int, uPtr<Chunk>>& c : m_chunks) {
@@ -131,7 +142,7 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
     z = 16 * glm::floor(z / 16.f);
 
     // Instantiate chunk
-    uPtr<Chunk> chunk = mkU<Chunk>(this->mp_context, x, z);
+    uPtr<Chunk> chunk = mkU<Chunk>(this->mp_context, x, z, &riverLines, &riverPlaced);
     Chunk *cPtr = chunk.get();
     m_chunks[toKey(x, z)] = move(chunk);
     // Set the neighbor pointers of itself and its neighbors

@@ -1,11 +1,13 @@
 #include "chunk.h"
 #include <iostream>
 
-Chunk::Chunk(OpenGLContext* mp_context, int x, int z) : Drawable(mp_context),
+Chunk::Chunk(OpenGLContext* mp_context, int x, int z,std::vector<RiverLine>* riverLines,std::unordered_set<std::pair<int,int>, HashPair, Compare>* riverPlaced) : Drawable(mp_context),
     m_coords(x, z), m_blocks(),
     m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}},
     m_chunkVBOData(this), hasVBOdata(false)
 {
+    this->riverLines = riverLines;
+    this->riverPlaced = riverPlaced;
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
 
@@ -407,7 +409,39 @@ float Chunk::perlinNoise3D(glm::vec3 uv) {
     }
     return surfletSum;
 }
+//signed distance function for cone
+float sdRoundCone(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r1, float r2)
+{
+  // sampling independent computations (only depend on shape)
+  glm::vec3  ba = b - a;
+  float l2 = glm::dot(ba,ba);
+  float rr = r1 - r2;
+  float a2 = l2 - rr*rr;
+  float il2 = 1.0/l2;
 
+  // sampling dependant computations
+  glm::vec3 pa = p - a;
+  float y = glm::dot(pa,ba);
+  float z = y - l2;
+  float x2 = glm::dot(pa*l2 - ba*y,pa*l2 - ba*y);
+  float y2 = y*y*l2;
+  float z2 = z*z*l2;
+
+  // single square root!
+  float k = glm::sign(rr)*rr*rr*x2;
+  if( glm::sign(z)*a2*z2>k ) return  sqrt(x2 + z2)        *il2 - r2;
+  if( glm::sign(y)*a2*y2<k ) return  sqrt(x2 + y2)        *il2 - r1;
+                        return (sqrt(x2*a2*il2)+y*rr)*il2 - r1;
+}
+
+void Chunk::generateRiverLines(glm::vec2 p, float r, int i){
+    glm::vec2 newP = glm::vec2(p[0] + 30*sin(r*3.14159/180.0), p[1] + 10*cos(r*3.14159/180.0));
+    riverLines->push_back(RiverLine(p, newP, 1));
+    if(i > 0){
+        generateRiverLines(newP, r + 30, i-1);
+        generateRiverLines(newP, r - 30, i-1);
+    }
+}
 
 void Chunk::setBlock(int x, int z){
     float b = perlinNoise(glm::vec2(x/300.0, z/300.0))+0.5;
@@ -421,7 +455,7 @@ void Chunk::setBlock(int x, int z){
 
     m+=128;
 
-    float w = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
+    float w = WorleyDist(glm::vec2(x/128.0 ,z/128.0));
     float g = -25*w + 25;
 
     g = std::max(std::min(
@@ -444,30 +478,34 @@ void Chunk::setBlock(int x, int z){
 
 
     //caves
-    for(int i = 108; i <= 128; i++){
-        float p = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
+//    for(int i = 108; i <= 128; i++){
+//        float p = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
 
-        if(p > 0){
-            setBlockAt(x, i, z, STONE);
-        }else if (i < 113){ // should be 25 (just for testing)
-            setBlockAt(x, i, z, LAVA);
-        }else{
-            setBlockAt(x, i, z, EMPTY);
-        }
-    }
+//        if(p > 0){
+//            setBlockAt(x, i, z, STONE);
+//        }else if (i < 113){ // should be 25 (just for testing)
+//            setBlockAt(x, i, z, LAVA);
+//        }else{
+//            setBlockAt(x, i, z, EMPTY);
+//        }
+//    }
     setBlockAt(x, 107, z, BEDROCK); // bottom layer is bedrock
 
     if(b > 0.5){
         for(int i = 129; i <= f; i++){
             if(i == f && f >= 200){
-                setBlockAt(x, i, z, SNOW); // top of mountain
+                //setBlockAt(x, i, z, SNOW); // top of mountain
             }else{
-                setBlockAt(x, i, z, STONE); // set mountains stone
+                //setBlockAt(x, i, z, STONE); // set mountains stone
             }
         }
 
     }
     else{
+        if(b < 0.15 && riverPlaced->find(std::pair(x/200, z/200)) == riverPlaced->end()){
+            generateRiverLines(glm::vec2(x,z),90,4);
+            riverPlaced->insert(std::pair(x/200, z/200));
+        }
         for(int i = 129; i <= f; i++){
             if(i == f){
                 setBlockAt(x, i, z, GRASS); // top of hills
@@ -477,6 +515,30 @@ void Chunk::setBlock(int x, int z){
         }
     }
     for(int i = f; i < 138; i++){
-        setBlockAt(x, i, z, WATER); // water 128 - 138
+        //setBlockAt(x, i, z, WATER); // water 128 - 138
     }
+
+    bool above = false;
+    int maxH = 0;
+    //std::cout<< riverLines->size() << "\n";
+    for(int i = 128; i < 138; i++){
+        for(int j = 0; j < riverLines->size(); j++){
+            if(sdRoundCone(glm::vec3(x,i,z), glm::vec3 ((*riverLines)[j].p1.x,133,(*riverLines)[j].p1.y), glm::vec3 ((*riverLines)[j].p2.x,133,(*riverLines)[j].p2.y),(*riverLines)[j].width, (*riverLines)[j].width) <= 0){
+                above = true;
+                if(i > maxH){
+                    maxH = i;
+                }
+                //std::cout<< x << ", " << i << ", " << z <<"\n";
+                setBlockAt(x, i, z, WATER);
+            }
+        }
+
+    }
+    if(above){
+        for(int i = maxH+1; i <= 254; i++){
+            setBlockAt(x, i, z, EMPTY);
+        }
+    }
+
+
 }
