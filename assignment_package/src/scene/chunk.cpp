@@ -164,6 +164,12 @@ void Chunk::createVBOdata() {
                                     case BEDROCK:
                                         UVoffset = glm::vec2(1, 15);
                                         break;
+                                    case SAND:
+                                        UVoffset = glm::vec2(2, 14);
+                                        break;
+                                    case MOSS_STONE:
+                                        UVoffset = glm::vec2(4, 13);
+                                        break;
                                     default:
                                         // Other block types are not yet handled, so we default to debug purple
                                         UVoffset = glm::vec2(10, 3);
@@ -226,8 +232,6 @@ void Chunk::createVBOdata() {
     this->m_chunkVBOData.m_vboDataOpaque = O_interleavedVector;
     this->m_chunkVBOData.m_idxDataTransparent = T_idx;
     this->m_chunkVBOData.m_vboDataTransparent = T_interleavedVector;
-
-    //this->bufferVBOdata(O_interleavedVector, O_idx, T_interleavedVector, T_idx);
 }
 
 void Chunk::bufferVBOdata(std::vector<glm::vec4> m_vboDataOpaque,
@@ -331,12 +335,8 @@ float Chunk::interpNoise1D(float x) {
     return v1 + fractX*(v2-v1);
 }
 //fractial brownian noise used for mountain biomes
-float Chunk::fbm(float x) {
+float Chunk::fbm(float x , float persistence, int octaves, float freq, float amp) {
     float total = 0;
-    float persistence = 0.5f;
-    int octaves = 5;
-    float freq = 2.f;
-    float amp = 0.5f;
     for(int i = 1; i <= octaves; i++) {
         total += interpNoise1D(x * freq) * amp;
 
@@ -414,39 +414,110 @@ float Chunk::perlinNoise3D(glm::vec3 uv) {
 
 // given an x and z cord, sets all block types for all y values in that column
 void Chunk::setBlock(int x, int z){
-    float b = perlinNoise(glm::vec2(x/300.0, z/300.0))+0.5;
+    float humidity = perlinNoise(glm::vec2((x+150.f)/250.0, (z+150.f)/250.0))+0.5;
+    float temperature = perlinNoise(glm::vec2((x + 0.f)/300.0, (z + 0.f)/300.0))+0.5;
 
-    float p = (perlinNoise(glm::vec2(x/64.0 ,z/64.0) ) + 0.5);
-    float r = fbm(p);
-    float m = -508*r + 203.2 ;
+    // Calulate mountain heightfield
+    float perlin = (perlinNoise(glm::vec2(x/64.0 ,z/64.0) ) + 0.5);
+    float fbmNoise = fbm(perlin);
+    float mountain = -508*fbmNoise + 203.2 ;
+    mountain = std::max(std::min(
+                     mountain,127.f),0.f); // mountain height
+    mountain+=128;
 
-    m = std::max(std::min(
-                     m,127.f),0.f); // mountain height
+    // Calculate grassland heightfield
+    float worley = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
+    float grassland = -25*worley + 25;
+    grassland = std::max(std::min(
+                     grassland,40.f),0.f); // hill height
+    grassland+=128;
 
-    m+=128;
+    // Calculate desert heightfield
+    float worley2 = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
+    float desert = -25*worley2 + 25;
+    desert = std::max(std::min(
+                     desert,5.f),0.f); // hill height
+    desert+=140;
 
-    float w = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
-    float g = -25*w + 25;
+    // Calculate canion heightfield
+    float perlinC = (perlinNoise(glm::vec2(x/128.0 ,z/128.0) ) + 0.5);
+    float fbmNoiseC = fbm(perlinC, 0.1, 16, 100.f, 2.f);
+    float canion = -508*fbmNoiseC + 203.2 ;
+    canion = std::max(std::min(
+                     canion,127.f),0.f); // mountain height
+    canion+=128;
 
-    g = std::max(std::min(
-                     g,40.f),0.f); // hill height
+    if (canion < 180.f) {
+        canion -= 100.f;
 
-    g+=128;
+        if (canion < 138.f) {// reduce water basin
+            canion -= 50.f;
+        }
+    } else if (canion > 210) {
+        canion = 210;
+    }
 
-    int f;
-    float mixParam = glm::smoothstep(0.4f, 0.6f, (float) b);
+    // Mix heightfields
+    int maxHeightGM;
+    int maxHeightCD;
+    float mixParamHum = glm::smoothstep(0.4f, 0.6f, humidity);
+    maxHeightGM = int(glm::mix(mountain, grassland, mixParamHum));
+    maxHeightGM = std::max(std::min(
+                     maxHeightGM,254),0); // interpolated value
+    maxHeightCD = int(glm::mix(desert, canion, mixParamHum));
+    maxHeightCD = std::max(std::min(
+                     maxHeightCD,254),0); // interpolated value
 
-    f = int(glm::mix(g, m, mixParam));
+    float mixParamTmp = glm::smoothstep(0.4f, 0.6f, temperature);
+    int maxHeight = int(glm::mix(maxHeightGM, maxHeightCD, mixParamTmp));
+    maxHeight = std::max(std::min(
+                     maxHeight,254),0); // interpolated value
+    // Draw terrain
+    if(mixParamHum > 0.4 && mixParamTmp < 0.6){ // Drwa Mountains
+        for(int i = 129; i <= maxHeight; i++){
+            if(i == maxHeight && maxHeight >= 200){
+                setBlockAt(x, i, z, SNOW); // top of mountain
+            }else{
+                setBlockAt(x, i, z, STONE); // set mountains stone
+            }
+        }
+    }
+    else if (mixParamHum > 0.4 && mixParamTmp >= 0.6){ // Draw Grasslan
+        for(int i = 129; i <= maxHeight; i++){
+            if(i == maxHeight){
+                setBlockAt(x, i, z, GRASS); // top of hills
+            }else{
+                setBlockAt(x, i, z, DIRT); // set hills dirt
+            }
+        }
+    } else if (mixParamHum <= 0.4 && mixParamTmp >= 0.6) { // Draw Desert
+        for(int i = 129; i <= maxHeight; i++){
+            setBlockAt(x, i, z, SAND); // top of hills
+        }
+    } else if (mixParamHum <= 0.4 && mixParamTmp < 0.6) { // Draw Canions
+        for(int i = 129; i <= maxHeight; i++){
+            if (i > 200) {
+                setBlockAt(x, i, z, STONE); // Capstone
+            } else {
+                setBlockAt(x, i, z, MOSS_STONE); // Mossy body
+            }
+        }
+    }
 
-    f = std::max(std::min(
-                     f,254),0); // interpolated value
+    // Add water
+    for(int i = maxHeight; i < 138; i++){
+        if (i == 137) {
+            setBlockAt(x, maxHeight,z, DIRT);
+        }
+        setBlockAt(x, i, z, WATER); // water 128 - 138
+    }
 
 
     //caves
     for(int i = 108; i <= 128; i++){
-        float p = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
+        float perlin = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
 
-        if(p > 0){
+        if(perlin > 0){
             setBlockAt(x, i, z, STONE);
         }else if (i < 113){ // should be 25 (just for testing)
             setBlockAt(x, i, z, LAVA);
@@ -455,27 +526,4 @@ void Chunk::setBlock(int x, int z){
         }
     }
     setBlockAt(x, 107, z, BEDROCK); // bottom layer is bedrock
-
-    if(b > 0.42){
-        for(int i = 129; i <= f; i++){
-            if(i == f && f >= 200){
-                setBlockAt(x, i, z, SNOW); // top of mountain
-            }else{
-                setBlockAt(x, i, z, STONE); // set mountains stone
-            }
-        }
-
-    }
-    else{
-        for(int i = 129; i <= f; i++){
-            if(i == f){
-                setBlockAt(x, i, z, GRASS); // top of hills
-            }else{
-                setBlockAt(x, i, z, DIRT); // set hills dirt
-            }
-        }
-    }
-    for(int i = f; i < 138; i++){
-        setBlockAt(x, i, z, WATER); // water 128 - 138
-    }
 }

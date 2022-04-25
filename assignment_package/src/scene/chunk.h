@@ -74,7 +74,7 @@ public:
     void setBlock(int x, int z); // sets blocks on coordinates x,z
     virtual void destroyVBOdata() override;
     float WorleyDist(glm::vec2 uv);
-    float fbm(float x);
+    float fbm(float x, float persistence = 0.5f, int octaves = 5, float freq = 2.f, float amp = 0.5f);
     float interpNoise1D(float x);
     float noise1D(int x);
     float perlinNoise(glm::vec2 uv);
