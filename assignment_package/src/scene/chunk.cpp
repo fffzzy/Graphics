@@ -144,6 +144,16 @@ void Chunk::createVBOdata() {
                                             UVoffset = glm::vec2(3, 15);
                                         }
                                         break;
+                                    case CACTUS:
+                                        // Set offset for cactus top
+                                        if (neighborFace.direction == YPOS) {
+                                            UVoffset = glm::vec2(5, 11);
+                                        } else if (neighborFace.direction == YNEG) { // Set offset for cactus bottom
+                                            UVoffset = glm::vec2(4, 11);
+                                        } else { // Set offset for cactus sides
+                                            UVoffset = glm::vec2(6, 11);
+                                        }
+                                        break;
                                     case DIRT:
                                         // Set offset for dirt
                                         UVoffset = glm::vec2(2, 15);
@@ -177,10 +187,10 @@ void Chunk::createVBOdata() {
                                 }
 
                                 // Push VBO Data
-                                if (btAtCurrPos != WATER && btAtCurrPos != LAVA) {
+                                if (btAtCurrPos != WATER && btAtCurrPos != LAVA && btAtCurrPos != CACTUS) {
                                     O_pos.push_back(glm::vec4(currWorldPos, 0.f) + VD.pos);
                                     O_nor.push_back(glm::vec4(neighborFace.directionVec, 0.f));
-                                    O_uv.push_back(glm::vec4(VD.uv + UVoffset / 16.f, 0, 0));
+                                    O_uv.push_back(glm::vec4((VD.uv) + UVoffset / 16.f, 0, 0));
                                 } else {
                                     T_pos.push_back(glm::vec4(currWorldPos, 0.f) + VD.pos);
                                     T_nor.push_back(glm::vec4(neighborFace.directionVec, 0.f));
@@ -282,6 +292,10 @@ void Chunk::generateChunk(){
     }
 }
 
+float Chunk::random1( glm::vec2 p ) {
+    return glm::fract(glm::sin(glm::dot(p, glm::vec2(127.1, 311.7)))
+                 * (float)43758.5453);
+}
 glm::vec2 Chunk::random2( glm::vec2 p ) {
     return glm::fract(glm::sin(glm::vec2(glm::dot(p, glm::vec2(127.1, 311.7)),
                  glm::dot(p, glm::vec2(269.5,183.3))))
@@ -522,7 +536,7 @@ void Chunk::setBlock(int x, int z){
             }
         }
     }
-    else if (mixParamHum > 0.5 && mixParamTmp <= 0.5){ // Draw Grasslan
+    else if (mixParamHum > 0.5 && mixParamTmp <= 0.5){ // Draw Grassland
         for(int i = 129; i <= maxHeight; i++){
             if(i == maxHeight){
                 setBlockAt(x, i, z, GRASS); // top of hills
@@ -533,6 +547,13 @@ void Chunk::setBlock(int x, int z){
     } else if (mixParamHum <= 0.5 && mixParamTmp > 0.5) { // Draw Desert
         for(int i = 129; i <= maxHeight; i++){
             setBlockAt(x, i, z, SAND); // top of hills
+        }
+
+        // Add Cactus
+        if (random1(glm::vec2(x, z)) > 0.999) {
+            setBlockAt(x, maxHeight + 1, z, CACTUS);
+            setBlockAt(x, maxHeight + 2, z, CACTUS);
+            setBlockAt(x, maxHeight + 3, z, CACTUS);
         }
     } else if (mixParamHum > 0.5 && mixParamTmp > 0.5) { // Draw Canions
         for(int i = 129; i <= maxHeight; i++){
