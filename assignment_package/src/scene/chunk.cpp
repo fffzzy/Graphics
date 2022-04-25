@@ -334,7 +334,7 @@ float Chunk::interpNoise1D(float x) {
 float Chunk::fbm(float x) {
     float total = 0;
     float persistence = 0.5f;
-    int octaves = 3;
+    int octaves = 5;
     float freq = 2.f;
     float amp = 0.5f;
     for(int i = 1; i <= octaves; i++) {
@@ -348,7 +348,7 @@ float Chunk::fbm(float x) {
 
 //Worley Distance function used for generating hill biomes
 float Chunk::WorleyDist(glm::vec2 uv) {
-    float grid = 1.0;
+    float grid = 0.3f;
     uv *= grid; // Now the space is 10x10 instead of 1x1. Change this to any number you want.
     glm::vec2 uvInt = glm::floor(uv);
     glm::vec2 uvFract = glm::fract(uv);
@@ -434,14 +434,9 @@ void Chunk::setBlock(int x, int z){
     g+=128;
 
     int f;
+    float mixParam = glm::smoothstep(0.4f, 0.6f, (float) b);
 
-    if(b > 0.6){
-        f = int(m);
-    }else if (b < 0.4){
-        f = int(g);
-    }else{
-        f = int(glm::mix(g, m, b));
-    }
+    f = int(glm::mix(g, m, mixParam));
 
     f = std::max(std::min(
                      f,254),0); // interpolated value

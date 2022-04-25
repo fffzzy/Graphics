@@ -201,11 +201,12 @@ void MyGL::performPostprocessRenderPass()
 // terrain that surround the player (refer to Terrain::m_generatedTerrain
 // for more info)
 void MyGL::renderTerrain() {
-    int xmin = 16 * (glm::floor(this->m_player.mcr_position.x / 16.f) - 2);
-    int xmax = 16 * (glm::floor(this->m_player.mcr_position.x / 16.f) + 3);
+    int xmin = 16 * (glm::floor(this->m_player.mcr_position.x / 16.f) - 15);
+    int xmax = 16 * (glm::floor(this->m_player.mcr_position.x / 16.f) + 16);
 
-    int zmin = 16 * (glm::floor(this->m_player.mcr_position.z / 16.f) - 2);
-    int zmax = 16 * (glm::floor(this->m_player.mcr_position.z / 16.f) + 3);
+    int zmin = 16 * (glm::floor(this->m_player.mcr_position.z / 16.f) - 15);
+    int zmax = 16 * (glm::floor(this->m_player.mcr_position.z / 16.f) + 16);
+    //m_terrain.
     m_terrain.draw(xmin, xmax, zmin, zmax, &m_progLambert);
 }
 
