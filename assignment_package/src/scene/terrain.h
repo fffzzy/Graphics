@@ -7,6 +7,9 @@
 #include <unordered_set>
 #include "shaderprogram.h"
 #include "cube.h"
+#include "blocktypeworker.h"
+#include "vboworker.h"
+#include <QThreadPool>
 
 
 //using namespace std;
@@ -14,6 +17,10 @@
 // Helper functions to convert (x, z) to and from hash map key
 int64_t toKey(int x, int z);
 glm::ivec2 toCoords(int64_t k);
+
+enum CallerType {
+    SYSTEM, PLAYER
+};
 
 // The container class for all of the Chunks in the game.
 // Ultimately, while Terrain will always store all Chunks,
@@ -53,6 +60,13 @@ private:
 
     OpenGLContext* mp_context;
 
+    std::vector<Chunk*> m_chunksThatHaveBlockData;
+    QMutex m_chunksThatHaveBlockDataLock;
+
+    std::vector<ChunkVBOData> m_chunksThatHaveVBOs;
+    QMutex m_chunksThatHaveVBOsLock;
+    float m_tryExpansionTimer;
+
 public:
     Terrain(OpenGLContext *context);
     ~Terrain();
@@ -77,19 +91,19 @@ public:
     // Given a world-space coordinate (which may have negative
     // values) set the block at that point in space to the
     // given type.
-    void setBlockAt(int x, int y, int z, BlockType t);
+    void setBlockAt(int x, int y, int z, BlockType t, CallerType ct = SYSTEM);
 
     // Draws every Chunk that falls within the bounding box
     // described by the min and max coords, using the provided
     // ShaderProgram
     void draw(int minX, int maxX, int minZ, int maxZ, ShaderProgram *shaderProgram);
 
-    // Expands terrain by a chunk if the player is 16 blocks away from the edge of the current terrain
-    void expandTerrain(int x, int z);
-
-    void setBlock(int x, int z);
-
-    // Initializes the Chunks that store the 64 x 256 x 64 block scene you
-    // see when the base code is run.
-    void CreateTestScene();
+    void spawnVBOWorkers(const vector<Chunk*> &chunksNeedingVBOs);
+    void checkThreadResults();
+    void multithreadedWork(glm::vec3 playerPos, glm::vec3 playerPosPrev, float dT);
+    void tryExpansion(glm::vec3 playerPos, glm::vec3 playerPosPrev);
+    QSet<int64_t> terrainZonesBoarderingZone(glm::ivec2 zone);
+    bool terrainZoneExists(int x, int z) const;
+    void spawnBlockTypeWorker(int64_t zoneToGenerate);
+    void spawnVBOWorker(Chunk* chunkNeedingVBOData);
 };

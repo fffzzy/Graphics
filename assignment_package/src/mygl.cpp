@@ -14,8 +14,10 @@ MyGL::MyGL(QWidget *parent)
       fb(this,0,0,0),
       m_worldAxes(this),
       m_progLambert(this), m_progFlat(this), m_diffuseTexture(this),
-      m_terrain(this), m_player(glm::vec3(32.f, 140.f, 32.f), m_terrain), accumulativeRotationOnRight(0.f), m_time(0.f)
-
+      m_terrain(this), m_player(glm::vec3(32.f, 200.f, 32.f), m_terrain),
+      m_currFrameTime(QDateTime::currentMSecsSinceEpoch()),
+      m_prevFrameTime(QDateTime::currentMSecsSinceEpoch()),
+      accumulativeRotationOnRight(0.f), m_time(0.f)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -61,6 +63,7 @@ void MyGL::initializeGL()
     m_diffuseTexture.create(":/textures/minecraft_textures_all.png");
     m_diffuseTexture.load(0);
 
+    //create instance of frame buffer
     fb = FrameBuffer(this, this->width(), this->height(), this->devicePixelRatio());
     fb.create();
 
@@ -85,13 +88,14 @@ void MyGL::initializeGL()
     // using multiple VAOs, we can just bind one once.
     glBindVertexArray(vao);
 
-    m_terrain.CreateTestScene();
+//    m_terrain.CreateTestScene();
 }
 
-
+//set up shaders
 void MyGL::createShaders()
 
 {
+    //greyscale (test) shader
     std::shared_ptr<PPShader> grey = std::make_shared<PPShader>(this);
     grey->create(":/glsl/post/passthrough.vert.glsl", ":/glsl/post/greyscale.frag.glsl");
     m_ppShader.push_back(grey);
@@ -101,7 +105,6 @@ void MyGL::createShaders()
     mp_progPostprocessCurrent = m_ppShader[0].get();
 
 }
-
 void MyGL::resizeGL(int w, int h) {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
@@ -113,7 +116,7 @@ void MyGL::resizeGL(int w, int h) {
 
     m_progLambert.setViewProjMatrix(viewproj);
     m_progFlat.setViewProjMatrix(viewproj);
-    fb.resize(this->width(), this->height(), this->devicePixelRatio());
+    fb.resize(this->width(), this->height(), this->devicePixelRatio()); //resize fb to screen size
 
     printGLErrorLog();
 }
@@ -124,13 +127,16 @@ void MyGL::resizeGL(int w, int h) {
 // all per-frame actions here, such as performing physics updates on all
 // entities in the scene.
 void MyGL::tick() {
-    this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+    m_player.mcr_posPrev = m_player.mcr_position;
+    m_currFrameTime = QDateTime::currentMSecsSinceEpoch();
+    float dT =(m_currFrameTime - m_prevFrameTime) * 0.1f;
+    m_player.tick(dT, m_inputs);
+//    cout << "tick()" << endl;
+    m_terrain.multithreadedWork(m_player.mcr_position, m_player.mcr_posPrev, dT);
     m_progLambert.setTime(m_time); // Set time in shader
     update(); // Calls paintGL() as part of a larger QOpenGLWidget pipeline
-    long long currframe = QDateTime::currentMSecsSinceEpoch();
-    m_player.tick(currframe - lastFrame, m_inputs);
-    lastFrame = currframe;
     sendPlayerDataToGUI(); // Updates the info in the secondary window displaying player data
+    m_prevFrameTime = m_currFrameTime;
     m_time++; // Update time
 }
 
@@ -150,6 +156,7 @@ void MyGL::sendPlayerDataToGUI() const {
 // MyGL's constructor links update() to a timer that fires 60 times per second,
 // so paintGL() called at a rate of 60 frames per second.
 void MyGL::paintGL() {
+    //bind frame buffer (so we are drawing to fb instead of screen)
     //fb.bindFrameBuffer();
 
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
@@ -161,7 +168,7 @@ void MyGL::paintGL() {
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setModelMatrix(glm::mat4());
 
-    this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
+    //this->m_terrain.expandTerrain(m_player.mcr_position.x, m_player.mcr_position.z);
 
     m_diffuseTexture.bind(0);
 
@@ -175,7 +182,7 @@ void MyGL::paintGL() {
 
     //performPostprocessRenderPass();
 }
-
+//bind frame buffer to texture (using test greyscale shader) (not working rn)
 void MyGL::performPostprocessRenderPass()
 {
     // Render the frame buffer as a texture on a screen-size quad

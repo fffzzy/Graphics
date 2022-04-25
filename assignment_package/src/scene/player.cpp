@@ -53,7 +53,7 @@ bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, const Terrain &terra
 Player::Player(glm::vec3 pos, Terrain &terrain)
     : Entity(pos), m_velocity(0,0,0), m_acceleration(0,0,0),
       m_camera(pos + glm::vec3(0, 1.5f, 0)), mcr_terrain(terrain),
-      mcr_camera(m_camera), isFlight(true)
+      mcr_camera(m_camera), isFlight(true), mcr_posPrev(0,0,0)
 {}
 
 Player::~Player()
@@ -71,7 +71,7 @@ void Player::toggleFlight() {
 void Player::processInputs(InputBundle &inputs) {
     // TODO: Update the Player's velocity and acceleration based on the
     // state of the inputs.
-//    m_camera.RecomputeAttributes(inputs.mouseX, inputs.mouseY);
+    //m_camera.RecomputeAttributes(inputs.mouseX, inputs.mouseY);
 
     if (isFlight) {
         if(inputs.spacePressed){
@@ -79,17 +79,17 @@ void Player::processInputs(InputBundle &inputs) {
             m_acceleration = glm::vec3(0);
         }
         if (inputs.wPressed) {
-            m_acceleration = acceleration * m_forward;
+            m_acceleration = (acceleration * m_forward);
         } else if (inputs.sPressed) {
-            m_acceleration = -acceleration * m_forward;
+            m_acceleration = (-acceleration * m_forward);
         } else if (inputs.aPressed) {
-            m_acceleration = -acceleration * m_right;
+            m_acceleration = (-acceleration * m_right);
         } else if (inputs.dPressed) {
-            m_acceleration = acceleration * m_right;
+            m_acceleration = (acceleration * m_right);
         } else if (inputs.qPressed) {
-            m_acceleration = -acceleration * m_up;
+            m_acceleration = (-acceleration * m_up);
         } else if (inputs.ePressed) {
-            m_acceleration = acceleration * m_up;
+            m_acceleration = (acceleration * m_up);
         } else {
             m_acceleration = glm::vec3(0.f, 0.f, 0.f);
         }
@@ -98,19 +98,19 @@ void Player::processInputs(InputBundle &inputs) {
         if (inputs.wPressed) {
             glm::vec3 tempAcc = acceleration * m_forward;
             tempAcc.y = 0;
-            m_acceleration = glm::normalize(tempAcc);
+            m_acceleration = tempAcc;
         } else if (inputs.sPressed) {
             glm::vec3 tempAcc = -acceleration * m_forward;
             tempAcc.y = 0;
-            m_acceleration = glm::normalize(tempAcc);
+            m_acceleration = (tempAcc);
         } else if (inputs.aPressed) {
             glm::vec3 tempAcc = -acceleration * m_right;
             tempAcc.y = 0;
-            m_acceleration = glm::normalize(tempAcc);
+            m_acceleration = (tempAcc);
         } else if (inputs.dPressed) {
             glm::vec3 tempAcc = acceleration * m_right;
             tempAcc.y = 0;
-            m_acceleration = glm::normalize(tempAcc);
+            m_acceleration = (tempAcc);
         } else {
             m_acceleration.x = 0;
             m_acceleration.z = 0;
@@ -131,7 +131,6 @@ void Player::processInputs(InputBundle &inputs) {
             }
         }
     }
-
 }
 
 void Player::computePhysics(float dT, Terrain &terrain) {
@@ -142,12 +141,20 @@ void Player::computePhysics(float dT, Terrain &terrain) {
     m_velocity.x *= 1 - friction;
     m_velocity.z *= 1 - friction;
 
+    if (isFlight) {
+        m_velocity.y *= 1 - friction;
+    }
+
     // Apply acceleration
     m_velocity += m_acceleration * dT;
 
     // Clamp velocity
-    m_velocity = glm::clamp(m_velocity, glm::vec3(-50.f, -100.f, -50.f), glm::vec3(50.f, 400.f, 50.f));
-    glm::vec3 move = m_velocity * dT * 0.00003f * slow;
+    if (isFlight) {
+        m_velocity = glm::clamp(m_velocity, glm::vec3(-400.f, -400.f, -400.f), glm::vec3(400.f, 400.f, 50.f));
+    } else {
+        m_velocity = glm::clamp(m_velocity, glm::vec3(-50.f, -200.f, -50.f), glm::vec3(50.f, 400.f, 50.f));
+    }
+    glm::vec3 move = m_velocity * dT * 0.0003f;
     if (isFlight) {
         moveAlongVector(move);
     } else {
@@ -205,7 +212,7 @@ void Player::addBlock() {
                           static_cast<unsigned int>(out_blockHit.z - chunkOrigin.y))) == EMPTY) {
             c->setBlockAt(static_cast<unsigned int>(out_blockHit.x - chunkOrigin.x),
                                  static_cast<unsigned int>(out_blockHit.y),
-                                 static_cast<unsigned int>(out_blockHit.z - chunkOrigin.y), STONE);
+                                 static_cast<unsigned int>(out_blockHit.z - chunkOrigin.y), STONE, PLAYER_C);
         }
     }
 }
@@ -215,7 +222,7 @@ void Player::removeBlock() {
     glm::ivec3 out_blockHit = glm::ivec3();
     bool isBlock = gridMarch(m_camera.mcr_position, 3.f * m_forward, mcr_terrain, &out_dist, &out_blockHit);
     if (isBlock) {
-        mcr_terrain.setBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z, EMPTY);
+        mcr_terrain.setBlockAt(out_blockHit.x, out_blockHit.y, out_blockHit.z, EMPTY, PLAYER);
     }
 
 }

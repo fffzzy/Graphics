@@ -7,6 +7,10 @@
 #include <unordered_map>
 #include <cstddef>
 
+enum CallerTypeC {
+    SYSTEM_C, PLAYER_C
+};
+
 class Chunk;
 //using namespace std;
 
@@ -39,6 +43,8 @@ struct EnumHash {
 
 // TODO have Chunk inherit from Drawable
 class Chunk : public Drawable {
+public:
+    glm::ivec2 m_coords;
 private:
     // All of the blocks contained within this Chunk
     std::array<BlockType, 65536> m_blocks;
@@ -49,11 +55,11 @@ private:
     std::unordered_map<Direction, Chunk*, EnumHash> m_neighbors;
 
 public:
-    explicit Chunk(OpenGLContext* mp_context);
+    explicit Chunk(OpenGLContext* mp_context, int x, int z);
     BlockType getBlockAt(unsigned int x, unsigned int y, unsigned int z) const;
     BlockType getBlockAt(int x, int y, int z) const;
     BlockType getBlockAt(glm::vec3 pos) const;
-    void setBlockAt(unsigned int x, unsigned int y, unsigned int z, BlockType t);
+    void setBlockAt(unsigned int x, unsigned int y, unsigned int z, BlockType t, CallerTypeC ct = SYSTEM_C);
     void linkNeighbor(uPtr<Chunk>& neighbor, Direction dir);
     virtual void createVBOdata() override;
     //void bufferVBOdata(std::vector<glm::vec4> interleavedData, std::vector<int> indices);
@@ -64,7 +70,7 @@ public:
                        std::vector<GLuint> m_idxDataTransparent);
     ChunkVBOData m_chunkVBOData;
     bool hasVBOdata;
-    void generateChunk(int PosX, int PosZ);
+    void generateChunk();
     void setBlock(int x, int z); // sets blocks on coordinates x,z
     virtual void destroyVBOdata() override;
     float WorleyDist(glm::vec2 uv);
@@ -73,5 +79,8 @@ public:
     float noise1D(int x);
     float perlinNoise(glm::vec2 uv);
     float surflet(glm::vec2 P, glm::vec2 gridPoint);
+    float surflet3D(glm::vec3 P, glm::vec3 gridPoint);
+    float perlinNoise3D(glm::vec3 uv);
+    glm::vec3 random3( glm::vec3 p );
     glm::vec2 random2( glm::vec2 p );
 };
