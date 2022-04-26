@@ -57,3 +57,9 @@ I ran into some trouble with actually playing the game. Specifically, because ou
 before they were ready. This caused many OpenGL errors and required me to keep movement slow so that they all had time to generate and buffer.
 
 Konstantinos Gkatzonis - Video: https://drive.google.com/open?id=1O-LOjYx0ZfdL9Qmk01c9efmo6VHaaGnN
+
+Charlie Herrmann:
+
+For this milestone I decided to create rivers. To do this I used L systems to define lines where I wanted my rivers. My L system was define as F -> F[+F][-F], where F is a forward line, + is a positive rotation of some angle and - is a negative rotation of some angle. I used random noise to vary the distance that the rivers ran as well as the angles of the branches. I also made lower levels of recursion had thinner branches, meaning the base of the river was the widest. To carve out the river from the terrain I used a signed distance function of a round cone. If any blocks were within the defined cone, I made them water. Also all blocks above the river were set to empty. 
+
+Final video Charlie: https://drive.google.com/file/d/1W-yibY-DIp8IvDC86eIRtKaiRTwCrjpm/view?usp=sharing
