@@ -435,11 +435,16 @@ float sdRoundCone(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r1, float r2)
 }
 
 void Chunk::generateRiverLines(glm::vec2 p, float r, int i){
-    glm::vec2 newP = glm::vec2(p[0] + 30*sin(r*3.14159/180.0), p[1] + 10*cos(r*3.14159/180.0));
-    riverLines->push_back(RiverLine(p, newP, 1));
+    float rand = fbm(p[0] * p[1]) + 0.5; //deterministic random number from 0 to 1
+    float length = 20 + 30 * rand;
+    float angleChange = 20 + 15 * rand;
+    float width = 1 + i* 0.3;
+    glm::vec2 newP = glm::vec2(p[0] + length*sin(r*3.14159/180.0), p[1] + length*cos(r*3.14159/180.0));
+    riverLines->push_back(RiverLine(p, newP, width));
     if(i > 0){
-        generateRiverLines(newP, r + 30, i-1);
-        generateRiverLines(newP, r - 30, i-1);
+
+        generateRiverLines(newP, r + angleChange, i-1);
+        generateRiverLines(newP, r - angleChange, i-1);
     }
 }
 
@@ -478,25 +483,25 @@ void Chunk::setBlock(int x, int z){
 
 
     //caves
-//    for(int i = 108; i <= 128; i++){
-//        float p = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
+    for(int i = 108; i <= 128; i++){
+        float p = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
 
-//        if(p > 0){
-//            setBlockAt(x, i, z, STONE);
-//        }else if (i < 113){ // should be 25 (just for testing)
-//            setBlockAt(x, i, z, LAVA);
-//        }else{
-//            setBlockAt(x, i, z, EMPTY);
-//        }
-//    }
+        if(p > 0){
+            setBlockAt(x, i, z, STONE);
+        }else if (i < 113){ // should be 25 (just for testing)
+            setBlockAt(x, i, z, LAVA);
+        }else{
+            setBlockAt(x, i, z, EMPTY);
+        }
+    }
     setBlockAt(x, 107, z, BEDROCK); // bottom layer is bedrock
 
     if(b > 0.5){
         for(int i = 129; i <= f; i++){
             if(i == f && f >= 200){
-                //setBlockAt(x, i, z, SNOW); // top of mountain
+                setBlockAt(x, i, z, SNOW); // top of mountain
             }else{
-                //setBlockAt(x, i, z, STONE); // set mountains stone
+                setBlockAt(x, i, z, STONE); // set mountains stone
             }
         }
 
@@ -504,6 +509,7 @@ void Chunk::setBlock(int x, int z){
     else{
         if(b < 0.15 && riverPlaced->find(std::pair(x/200, z/200)) == riverPlaced->end()){
             generateRiverLines(glm::vec2(x,z),90,4);
+            std::cout << x << " " << z;
             riverPlaced->insert(std::pair(x/200, z/200));
         }
         for(int i = 129; i <= f; i++){
@@ -514,13 +520,9 @@ void Chunk::setBlock(int x, int z){
             }
         }
     }
-    for(int i = f; i < 138; i++){
-        //setBlockAt(x, i, z, WATER); // water 128 - 138
-    }
 
     bool above = false;
     int maxH = 0;
-    //std::cout<< riverLines->size() << "\n";
     for(int i = 128; i < 138; i++){
         for(int j = 0; j < riverLines->size(); j++){
             if(sdRoundCone(glm::vec3(x,i,z), glm::vec3 ((*riverLines)[j].p1.x,133,(*riverLines)[j].p1.y), glm::vec3 ((*riverLines)[j].p2.x,133,(*riverLines)[j].p2.y),(*riverLines)[j].width, (*riverLines)[j].width) <= 0){
@@ -528,7 +530,6 @@ void Chunk::setBlock(int x, int z){
                 if(i > maxH){
                     maxH = i;
                 }
-                //std::cout<< x << ", " << i << ", " << z <<"\n";
                 setBlockAt(x, i, z, WATER);
             }
         }
