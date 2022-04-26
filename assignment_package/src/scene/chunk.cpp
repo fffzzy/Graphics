@@ -1,11 +1,13 @@
 #include "chunk.h"
 #include <iostream>
 
-Chunk::Chunk(OpenGLContext* mp_context, int x, int z) : Drawable(mp_context),
+Chunk::Chunk(OpenGLContext* mp_context, int x, int z,std::vector<RiverLine>* riverLines,std::unordered_set<std::pair<int,int>, HashPair, Compare>* riverPlaced) : Drawable(mp_context),
     m_coords(x, z), m_blocks(),
     m_neighbors{{XPOS, nullptr}, {XNEG, nullptr}, {ZPOS, nullptr}, {ZNEG, nullptr}},
     m_chunkVBOData(this), hasVBOdata(false)
 {
+    this->riverLines = riverLines;
+    this->riverPlaced = riverPlaced;
     std::fill_n(m_blocks.begin(), 65536, EMPTY);
 }
 
@@ -459,133 +461,187 @@ float Chunk::perlinNoise3D(glm::vec3 uv) {
     }
     return surfletSum;
 }
+//signed distance function for cone
+float sdRoundCone(glm::vec3 p, glm::vec3 a, glm::vec3 b, float r1, float r2)
+{
+  // sampling independent computations (only depend on shape)
+  glm::vec3  ba = b - a;
+  float l2 = glm::dot(ba,ba);
+  float rr = r1 - r2;
+  float a2 = l2 - rr*rr;
+  float il2 = 1.0/l2;
 
-// given an x and z cord, sets all block types for all y values in that column
+  // sampling dependant computations
+  glm::vec3 pa = p - a;
+  float y = glm::dot(pa,ba);
+  float z = y - l2;
+  float x2 = glm::dot(pa*l2 - ba*y,pa*l2 - ba*y);
+  float y2 = y*y*l2;
+  float z2 = z*z*l2;
+
+  // single square root!
+  float k = glm::sign(rr)*rr*rr*x2;
+  if( glm::sign(z)*a2*z2>k ) return  sqrt(x2 + z2)        *il2 - r2;
+  if( glm::sign(y)*a2*y2<k ) return  sqrt(x2 + y2)        *il2 - r1;
+                        return (sqrt(x2*a2*il2)+y*rr)*il2 - r1;
+}
+
+void Chunk::generateRiverLines(glm::vec2 p, float r, int i){
+    float rand = fbm(p[0] * p[1]) + 0.5; //deterministic random number from 0 to 1
+    float length = 20 + 30 * rand;
+    float angleChange = 20 + 15 * rand;
+    float width = 1 + i* 0.3;
+    glm::vec2 newP = glm::vec2(p[0] + length*sin(r*3.14159/180.0), p[1] + length*cos(r*3.14159/180.0));
+    riverLines->push_back(RiverLine(p, newP, width));
+    if(i > 0){
+
+        generateRiverLines(newP, r + angleChange, i-1);
+        generateRiverLines(newP, r - angleChange, i-1);
+    }
+}
+
 void Chunk::setBlock(int x, int z){
     float humidity = -perlinNoise(glm::vec2((x+0.f)/300.0, (z+0.f)/300.0))+0.5;
-    float temperature = perlinNoise2(glm::vec2((x + 0.f)/300.0, (z + 0.f)/300.0))+0.5;
+        float temperature = perlinNoise2(glm::vec2((x + 0.f)/300.0, (z + 0.f)/300.0))+0.5;
 
-    // Calulate mountain heightfield
-    float perlin = (perlinNoise(glm::vec2(x/64.0 ,z/64.0) ) + 0.5);
-    float fbmNoise = fbm(perlin,0.5f,1);
-    float mountain = -508*fbmNoise + 203.2 ;
-    mountain = std::max(std::min(
-                     mountain,180.f),0.f); // mountain height
-    mountain+=128;
+        // Calulate mountain heightfield
+        float perlin = (perlinNoise(glm::vec2(x/64.0 ,z/64.0) ) + 0.5);
+        float fbmNoise = fbm(perlin,0.5f,1);
+        float mountain = -508*fbmNoise + 203.2 ;
+        mountain = std::max(std::min(
+                         mountain,180.f),0.f); // mountain height
+        mountain+=128;
 
-    // Calculate grassland heightfield
-    float worley = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
-    float grassland = -25*worley + 25;
-    grassland = std::max(std::min(
-                     grassland,40.f),0.f); // hill height
-    grassland+=128;
+        // Calculate grassland heightfield
+        float worley = WorleyDist(glm::vec2(x/64.0 ,z/64.0));
+        float grassland = -25*worley + 25;
+        grassland = std::max(std::min(
+                         grassland,40.f),0.f); // hill height
+        grassland+=128;
 
-    // Calculate desert heightfield
-    float worley2 = WorleyDist(glm::vec2(x/64.0 ,z/62.0));
-    float desert = -29*worley2 + 25;
-    desert = std::max(std::min(
-                     desert,10.f),0.f); // hill height
-    desert+=140;
+        // Calculate desert heightfield
+        float worley2 = WorleyDist(glm::vec2(x/64.0 ,z/62.0));
+        float desert = -29*worley2 + 25;
+        desert = std::max(std::min(
+                         desert,10.f),0.f); // hill height
+        desert+=140;
 
-    // Calculate canion heightfield
-    float perlinC = (perlinNoise(glm::vec2(x/300.0 ,z/300.0) ) + 0.5);
-    float fbmNoiseC = fbm(perlinC, 0.1, 16, 100.f, 2.f);
-    float canion = -508*fbmNoiseC + 203.2 ;
-    canion = std::max(std::min(
-                     canion,127.f),0.f); // canion height
-    canion+=128;
+        // Calculate canion heightfield
+        float perlinC = (perlinNoise(glm::vec2(x/300.0 ,z/300.0) ) + 0.5);
+        float fbmNoiseC = fbm(perlinC, 0.1, 16, 100.f, 2.f);
+        float canion = -508*fbmNoiseC + 203.2 ;
+        canion = std::max(std::min(
+                         canion,127.f),0.f); // canion height
+        canion+=128;
 
-    if (canion < 180.f) {
-        canion -= 100.f;
+        if (canion < 180.f) {
+            canion -= 100.f;
 
-        if (canion < 138.f) {// reduce water basin
-            canion -= 10.f;
+            if (canion < 138.f) {// reduce water basin
+                canion -= 10.f;
+            }
+        } else if (canion > 210) {
+            canion = 210;
         }
-    } else if (canion > 210) {
-        canion = 210;
-    }
 
-    canion = std::max(std::min(
-                     canion,255.f),1.f); // canion height
+        canion = std::max(std::min(
+                         canion,255.f),1.f); // canion height
 
-    // Mix heightfields
-    int maxHeightGM;
-    int maxHeightCD;
-    float mixParamHum = glm::smoothstep(0.4f, 0.6f, humidity);
-    float mixParamTmp = glm::smoothstep(0.4f, 0.6f, temperature);
+        // Mix heightfields
+        int maxHeightGM;
+        int maxHeightCD;
+        float mixParamHum = glm::smoothstep(0.4f, 0.6f, humidity);
+        float mixParamTmp = glm::smoothstep(0.4f, 0.6f, temperature);
 
-    maxHeightGM = int(glm::mix(mountain, grassland, mixParamHum));
-    maxHeightGM = std::max(std::min(
-                     maxHeightGM,254),1); // interpolated value
-    maxHeightCD = int(glm::mix(desert, canion, mixParamHum));
-    maxHeightCD = std::max(std::min(
-                     maxHeightCD,254),1); // interpolated value
+        maxHeightGM = int(glm::mix(mountain, grassland, mixParamHum));
+        maxHeightGM = std::max(std::min(
+                         maxHeightGM,254),1); // interpolated value
+        maxHeightCD = int(glm::mix(desert, canion, mixParamHum));
+        maxHeightCD = std::max(std::min(
+                         maxHeightCD,254),1); // interpolated value
 
-    int maxHeight = int(glm::mix(maxHeightGM, maxHeightCD, mixParamTmp));
-    maxHeight = std::max(std::min(
-                     maxHeight,254),1); // interpolated value
-    // Draw terrain
-    if(mixParamHum <= 0.5 && mixParamTmp <= 0.5){ // Draw Mountains
-        for(int i = 129; i <= maxHeight; i++){
-            if(i == maxHeight && maxHeight >= 200){
-                setBlockAt(x, i, z, SNOW); // top of mountain
-            }else if (i < 150 && maxHeight < 150){
-                setBlockAt(x, i, z, DIRT); // Plateau grass
-            } else {
-                setBlockAt(x, i, z, STONE); // set mountains stone
+        int maxHeight = int(glm::mix(maxHeightGM, maxHeightCD, mixParamTmp));
+        maxHeight = std::max(std::min(
+                         maxHeight,254),1); // interpolated value
+        // Draw terrain
+        if(mixParamHum <= 0.5 && mixParamTmp <= 0.5){ // Draw Mountains
+            for(int i = 129; i <= maxHeight; i++){
+                if(i == maxHeight && maxHeight >= 200){
+                    setBlockAt(x, i, z, SNOW); // top of mountain
+                }else if (i < 150 && maxHeight < 150){
+                    setBlockAt(x, i, z, DIRT); // Plateau grass
+                } else {
+                    setBlockAt(x, i, z, STONE); // set mountains stone
+                }
             }
         }
-    }
-    else if (mixParamHum > 0.5 && mixParamTmp <= 0.5){ // Draw Grassland
-        for(int i = 129; i <= maxHeight; i++){
-            if(i == maxHeight){
-                setBlockAt(x, i, z, GRASS); // top of hills
+        else if (mixParamHum > 0.5 && mixParamTmp <= 0.5){ // Draw Grassland
+            if(riverPlaced->find(std::pair(x/200, z/200)) == riverPlaced->end()){
+                generateRiverLines(glm::vec2(x,z),90,4);
+                riverPlaced->insert(std::pair(x/200, z/200));
+             }
+
+            for(int i = 129; i <= maxHeight; i++){
+                if(i == maxHeight){
+                    setBlockAt(x, i, z, GRASS); // top of hills
+                }else{
+                    setBlockAt(x, i, z, DIRT); // set hills dirt
+                }
+            }
+        } else if (mixParamHum <= 0.5 && mixParamTmp > 0.5) { // Draw Desert
+            for(int i = 129; i <= maxHeight; i++){
+                setBlockAt(x, i, z, SAND); // top of hills
+            }
+
+            // Add Cactus
+            if (random1(glm::vec2(x, z)) > 0.999) {
+                setBlockAt(x, maxHeight + 1, z, CACTUS);
+                setBlockAt(x, maxHeight + 2, z, CACTUS);
+                setBlockAt(x, maxHeight + 3, z, CACTUS);
+            }
+        } else if (mixParamHum > 0.5 && mixParamTmp > 0.5) { // Draw Canions
+            for(int i = 129; i <= maxHeight; i++){
+                if (i > 200) {
+                    setBlockAt(x, i, z, STONE); // Capstone
+                } else {
+                    setBlockAt(x, i, z, MOSS_STONE); // Mossy body
+                }
+            }
+        }
+        //rivers
+        bool above = false;
+        int maxH = 0;
+        for(int i = 128; i < 138; i++){
+            for(int j = 0; j < riverLines->size(); j++){
+                if(sdRoundCone(glm::vec3(x,i,z), glm::vec3 ((*riverLines)[j].p1.x,133,(*riverLines)[j].p1.y), glm::vec3 ((*riverLines)[j].p2.x,133,(*riverLines)[j].p2.y),(*riverLines)[j].width, (*riverLines)[j].width) <= 0){
+                    above = true;
+                    if(i > maxH){
+                        maxH = i;
+                    }
+                    setBlockAt(x, i, z, WATER);
+                }
+            }
+
+        }
+        if(above){
+            for(int i = maxH+1; i <= 254; i++){
+                setBlockAt(x, i, z, EMPTY);
+            }
+        }
+
+
+        //caves
+        for(int i = 108; i <= 128; i++){
+            float perlin = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
+
+            if(perlin > 0){
+                setBlockAt(x, i, z, STONE);
+            }else if (i < 113){ // should be 25 (just for testing)
+                setBlockAt(x, i, z, LAVA);
             }else{
-                setBlockAt(x, i, z, DIRT); // set hills dirt
+                setBlockAt(x, i, z, EMPTY);
             }
         }
-    } else if (mixParamHum <= 0.5 && mixParamTmp > 0.5) { // Draw Desert
-        for(int i = 129; i <= maxHeight; i++){
-            setBlockAt(x, i, z, SAND); // top of hills
-        }
+        setBlockAt(x, 107, z, BEDROCK); // bottom layer is bedrock
 
-        // Add Cactus
-        if (random1(glm::vec2(x, z)) > 0.999) {
-            setBlockAt(x, maxHeight + 1, z, CACTUS);
-            setBlockAt(x, maxHeight + 2, z, CACTUS);
-            setBlockAt(x, maxHeight + 3, z, CACTUS);
-        }
-    } else if (mixParamHum > 0.5 && mixParamTmp > 0.5) { // Draw Canions
-        for(int i = 129; i <= maxHeight; i++){
-            if (i > 200) {
-                setBlockAt(x, i, z, STONE); // Capstone
-            } else {
-                setBlockAt(x, i, z, MOSS_STONE); // Mossy body
-            }
-        }
-    }
-
-    // Add water
-    for(int i = maxHeight; i < 138; i++){
-        if (i == maxHeight) {
-            setBlockAt(x, maxHeight, z, DIRT);
-            continue;
-        }
-        setBlockAt(x, i, z, WATER); // water 128 - 138
-    }
-
-
-    //caves
-    for(int i = 108; i <= 128; i++){
-        float perlin = perlinNoise3D(glm::vec3(x/10.0,i/10.0,z/10.0));
-
-        if(perlin > 0){
-            setBlockAt(x, i, z, STONE);
-        }else if (i < 113){ // should be 25 (just for testing)
-            setBlockAt(x, i, z, LAVA);
-        }else{
-            setBlockAt(x, i, z, EMPTY);
-        }
-    }
-    setBlockAt(x, 107, z, BEDROCK); // bottom layer is bedrock
 }
