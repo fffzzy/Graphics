@@ -63,3 +63,7 @@ Charlie Herrmann:
 For this milestone I decided to create rivers. To do this I used L systems to define lines where I wanted my rivers. My L system was define as F -> F[+F][-F], where F is a forward line, + is a positive rotation of some angle and - is a negative rotation of some angle. I used random noise to vary the distance that the rivers ran as well as the angles of the branches. I also made it so the lower levels of recursion had thinner branches, meaning the base of the river was the widest. To carve out the river from the terrain I used a signed distance function of a round cone. If any blocks were within the defined cone, I made them water. Also all blocks above the river were set to empty. 
 
 Final video Charlie: https://drive.google.com/file/d/1W-yibY-DIp8IvDC86eIRtKaiRTwCrjpm/view?usp=sharing
+
+Zhouyang Fang: Day and night cycle (60 pts)
+
+I create both sun and moon since they are only different in color. Worley noise is calculated every time frame to render the sky based on pixel space and camera position, making the game kinda laggy. Three thresholds are set to determine the sky color.
