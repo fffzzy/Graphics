@@ -28,7 +28,7 @@ To implement texturing I added replaced the color parameter in the VBOs with the
 replace the section where a different color is exported for each block type with a section that determines the UV offset on the texture map that corresponds to the current block type.
 To render transparent components I separated the opaque and transparent VBOs into 2 different buffers and set up the interleaved drawing function so that it could be asked to draw either the primary
 or the secondary buffered VBOs. First I drew all the primary VBOs from each chunk (the opaque objects) and then the secondsry ones (transparent). Finally, for the texture animation segment I exported
-the time of the game to the shader as a uniform variable and shifted the UVs that corresponded to water and lava so that they appeared to be moving.
+the time of the game to the shader as a uniform variable and shifted the UVs that corresponded to water and lava so that they appeared to be moving. I also implemented the mechanic for falling through water along with Charlie.
 
 Charlie Herrmann: Cave Systems
 
@@ -56,7 +56,7 @@ I also improved the previously existing biomes (mountains and grasslands) to loo
 I ran into some trouble with actually playing the game. Specifically, because our multithreading segment had many issues, the VBOs were not buffered appropriately and quickly enough to not be asked to render
 before they were ready. This caused many OpenGL errors and required me to keep movement slow so that they all had time to generate and buffer.
 
-Konstantinos Gkatzonis - Video: https://drive.google.com/open?id=1O-LOjYx0ZfdL9Qmk01c9efmo6VHaaGnN
+Konstantinos Gkatzonis - Video (for all parts): https://drive.google.com/open?id=1OcQSeRKf67sCy1LHNfR8_t2GhYXrczXA&authuser=kgatz%40seas.upenn.edu&usp=drive_fs
 
 Charlie Herrmann:
 
