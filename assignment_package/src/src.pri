@@ -8,6 +8,7 @@ SOURCES += \
     $$PWD/mainwindow.cpp \
     $$PWD/mygl.cpp \
     $$PWD/blocktypeworker.cpp \
+    $$PWD/riverline.cpp \
     $$PWD/vboworker.cpp \
     $$PWD/ppshader.cpp \
     $$PWD/scene/quad.cpp \
@@ -32,6 +33,7 @@ HEADERS += \
     $$PWD/mainwindow.h \
     $$PWD/mygl.h \
     $$PWD/blocktypeworker.h \
+    $$PWD/riverline.h \
     $$PWD/scene/chunkhelpers.h \
     $$PWD/vboworker.h \
     $$PWD/ppshader.h \

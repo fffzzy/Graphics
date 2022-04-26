@@ -24,6 +24,11 @@ https://drive.google.com/file/d/1CJrhafz2W3ZNDQWmeDjgCuYKNflFSwAg/view?usp=shari
 
 MILESTONE 2:
 Konstantinos Gkatzonis: Texturing and Texture Animation
+To implement texturing I added replaced the color parameter in the VBOs with the UV coordinates of corresponding to each vertex. Then, in the createVBOData function I made sure to
+replace the section where a different color is exported for each block type with a section that determines the UV offset on the texture map that corresponds to the current block type.
+To render transparent components I separated the opaque and transparent VBOs into 2 different buffers and set up the interleaved drawing function so that it could be asked to draw either the primary
+or the secondary buffered VBOs. First I drew all the primary VBOs from each chunk (the opaque objects) and then the secondsry ones (transparent). Finally, for the texture animation segment I exported
+the time of the game to the shader as a uniform variable and shifted the UVs that corresponded to water and lava so that they appeared to be moving.
 
 Charlie Herrmann: Cave Systems
 
@@ -39,3 +44,22 @@ Walking through water: https://drive.google.com/file/d/1GeBH4xUGa9WlqhQTTIA4RlCl
 
 Caves: https://drive.google.com/file/d/1T2zAyBnavTi0_CYtk6KVBUwVr0ICXZHk/view?usp=sharing
 
+
+MILESTONE 3:
+Konstantinos Gkatzonis: Additional Biomes
+I decided to create 2 new biomes for this milestone. A generally flat and dry desert biome with cactuses and a humid canion biome with mossy rocks and deep narrow caverns with water inside.
+To do so, I created two noise maps, one for humidity and one for temperature, and proceeded to use those to distribute the different biomes. I used bilinear interpolation to smoothly transition between them,
+something that took quite a lot of work with tuning the noise functions of the new biomes to get it working and looking right. Finally, I improved some of the incomplete segments of previous sections. More
+specifically I improved the movement mechanics from Milestone 1 so that they worked more consistently and implemented block creation and destruction, something that broke when multithreading was added initially.
+I also improved the previously existing biomes (mountains and grasslands) to look more natural.
+
+I ran into some trouble with actually playing the game. Specifically, because our multithreading segment had many issues, the VBOs were not buffered appropriately and quickly enough to not be asked to render
+before they were ready. This caused many OpenGL errors and required me to keep movement slow so that they all had time to generate and buffer.
+
+Konstantinos Gkatzonis - Video: https://drive.google.com/open?id=1O-LOjYx0ZfdL9Qmk01c9efmo6VHaaGnN
+
+Charlie Herrmann:
+
+For this milestone I decided to create rivers. To do this I used L systems to define lines where I wanted my rivers. My L system was define as F -> F[+F][-F], where F is a forward line, + is a positive rotation of some angle and - is a negative rotation of some angle. I used random noise to vary the distance that the rivers ran as well as the angles of the branches. I also made it so the lower levels of recursion had thinner branches, meaning the base of the river was the widest. To carve out the river from the terrain I used a signed distance function of a round cone. If any blocks were within the defined cone, I made them water. Also all blocks above the river were set to empty. 
+
+Final video Charlie: https://drive.google.com/file/d/1W-yibY-DIp8IvDC86eIRtKaiRTwCrjpm/view?usp=sharing

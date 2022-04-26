@@ -9,15 +9,15 @@
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
-      m_ppShader(),
-      m_geomQuad(this),
-      fb(this,0,0,0),
       m_worldAxes(this),
-      m_progLambert(this), m_progFlat(this), m_diffuseTexture(this),
-      m_terrain(this), m_player(glm::vec3(0.f, 200.f, 0.f), m_terrain),
-      m_currFrameTime(QDateTime::currentMSecsSinceEpoch()),
-      m_prevFrameTime(QDateTime::currentMSecsSinceEpoch()),
-      accumulativeRotationOnRight(0.f), m_time(0.f),
+      m_progLambert(this),
+      m_progFlat(this),
+      fb(this,0,0,0),
+      m_diffuseTexture(this),
+      m_terrain(this), m_player(glm::vec3(32.f, 200.f, 32.f), m_terrain), m_currFrameTime(QDateTime::currentMSecsSinceEpoch()),
+      m_prevFrameTime(QDateTime::currentMSecsSinceEpoch()), m_geomQuad(this),
+      m_ppShader(),
+      m_time(0.f), accumulativeRotationOnRight(0.f),
       m_sky(this), m_progSky(this)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -67,6 +67,7 @@ void MyGL::initializeGL()
     //create instance of frame buffer
     fb = FrameBuffer(this, this->width(), this->height(), this->devicePixelRatio());
     fb.create();
+
 
     //Create the instance of the world axes
     m_worldAxes.createVBOdata();

@@ -3,8 +3,10 @@
 #include "glm_includes.h"
 #include "drawable.h"
 #include "chunkhelpers.h"
+#include "riverline.h"
 #include <array>
 #include <unordered_map>
+#include <unordered_set>
 #include <cstddef>
 
 enum CallerTypeC {
@@ -34,6 +36,21 @@ struct EnumHash {
     }
 };
 
+struct HashPair {
+public:
+    uint64_t operator()(const std::pair<int,int> &p) const{
+        uint64_t int1Addr = (uint64_t)(p.first);
+        uint64_t int2Addr = (uint64_t)(p.second);
+        return int1Addr ^ int2Addr;
+    }
+};
+
+struct Compare {
+    bool operator () (const std::pair<int,int> & lhs, const std::pair<int,int> & rhs)const  {
+        return lhs.first == rhs.first && lhs.second == rhs.second;
+    }
+};
+
 // One Chunk is a 16 x 256 x 16 section of the world,
 // containing all the Minecraft blocks in that area.
 // We divide the world into Chunks in order to make
@@ -53,9 +70,11 @@ private:
     // a key for this map.
     // These allow us to properly determine
     std::unordered_map<Direction, Chunk*, EnumHash> m_neighbors;
+    std::vector<RiverLine>* riverLines;
+    std::unordered_set<std::pair<int,int>, HashPair, Compare>* riverPlaced;
 
 public:
-    explicit Chunk(OpenGLContext* mp_context, int x, int z);
+    explicit Chunk(OpenGLContext* mp_context, int x, int z, std::vector<RiverLine>* riverLines,std::unordered_set<std::pair<int,int>, HashPair, Compare>* riverPlaced);
     BlockType getBlockAt(unsigned int x, unsigned int y, unsigned int z) const;
     BlockType getBlockAt(int x, int y, int z) const;
     BlockType getBlockAt(glm::vec3 pos) const;
@@ -85,6 +104,7 @@ public:
     float perlinNoise3D(glm::vec3 uv);
     float random1( glm::vec2 p );
     glm::vec2 random2( glm::vec2 p );
+    void generateRiverLines(glm::vec2 p, float r, int i);
     glm::vec2 random2_2( glm::vec2 p );
     glm::vec3 random3( glm::vec3 p );
 };
