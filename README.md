@@ -67,3 +67,5 @@ Final video Charlie: https://drive.google.com/file/d/1W-yibY-DIp8IvDC86eIRtKaiRT
 Zhouyang Fang: Day and night cycle (60 pts)
 
 I create both sun and moon since they are only different in color. Worley noise is calculated every time frame to render the sky based on pixel space and camera position, making the game kinda laggy. Three thresholds are set to determine the sky color.
+
+Video: https://drive.google.com/file/d/1SQAJATgb5j8Rnuc0TOhwkeUxbcY9a1fN/view?usp=sharing
