@@ -27,9 +27,7 @@ public:
     int unifViewProj; // A handle for the "uniform" mat4 representing combined projection and view matrices in the vertex shader
     int unifColor; // A handle for the "uniform" vec4 representing color of geometry in the vertex shader
     int unifSampler2D; // A handle for the "uniform" texture
-    int unifTime; // A handle for the time variable 
-    int unifDimensions;
-    int unifEye;
+    int unifTime; // A handle for the time variable
 
 public:
     ShaderProgram(OpenGLContext* context);

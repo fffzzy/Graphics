@@ -46,8 +46,6 @@ private:
 
 
     int m_time; // Time variable used to track time in shader
-    Quad m_sky;
-    ShaderProgram m_progSky;
 
     long long lastFrame;
     float sensitivity = 0.1f;
