@@ -17,7 +17,8 @@ MyGL::MyGL(QWidget *parent)
       m_terrain(this), m_player(glm::vec3(0.f, 200.f, 0.f), m_terrain),
       m_currFrameTime(QDateTime::currentMSecsSinceEpoch()),
       m_prevFrameTime(QDateTime::currentMSecsSinceEpoch()),
-      accumulativeRotationOnRight(0.f), m_time(0.f)
+      accumulativeRotationOnRight(0.f), m_time(0.f),
+      m_sky(this), m_progSky(this)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
@@ -69,12 +70,12 @@ void MyGL::initializeGL()
 
     //Create the instance of the world axes
     m_worldAxes.createVBOdata();
-
+    m_sky.createVBOdata();
     // Create and set up the diffuse shader
     m_progLambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     m_progFlat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
-
+    m_progSky.create(":/glsl/sky.vert.glsl", ":/glsl/sky.frag.glsl");
     // Set a color with which to draw geometry.
     // This will ultimately not be used when you change
     // your program to render Chunks with vertex colors
@@ -116,8 +117,12 @@ void MyGL::resizeGL(int w, int h) {
 
     m_progLambert.setViewProjMatrix(viewproj);
     m_progFlat.setViewProjMatrix(viewproj);
+    m_progSky.setViewProjMatrix(glm::inverse(viewproj));
     fb.resize(this->width(), this->height(), this->devicePixelRatio()); //resize fb to screen size
-
+    this->glUniform2i(m_progSky.unifDimensions, width(), height());
+    this->glUniform3f(m_progSky.unifEye, m_player.mcr_camera.mcr_position.x,
+                     m_player.mcr_camera.mcr_position.y,
+                     m_player.mcr_camera.mcr_position.z);
     printGLErrorLog();
 }
 
@@ -167,7 +172,13 @@ void MyGL::paintGL() {
     m_progFlat.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setViewProjMatrix(m_player.mcr_camera.getViewProj());
     m_progLambert.setModelMatrix(glm::mat4());
-
+    m_progSky.setViewProjMatrix(glm::inverse(m_player.mcr_camera.getViewProj()));
+    m_progSky.useMe();
+    this->glUniform3f(m_progSky.unifEye, m_player.mcr_camera.mcr_position.x,
+                    m_player.mcr_camera.mcr_position.y,
+                    m_player.mcr_camera.mcr_position.z);
+    this->glUniform1f(m_progSky.unifTime,  m_time++);
+    m_progSky.draw(m_sky);
 
     m_diffuseTexture.bind(0);
 
