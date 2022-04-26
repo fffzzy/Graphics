@@ -71,7 +71,7 @@ void Player::toggleFlight() {
 void Player::processInputs(InputBundle &inputs) {
     // TODO: Update the Player's velocity and acceleration based on the
     // state of the inputs.
-//    m_camera.RecomputeAttributes(inputs.mouseX, inputs.mouseY);
+    //m_camera.RecomputeAttributes(inputs.mouseX, inputs.mouseY);
 
     if (isFlight) {
         if(inputs.spacePressed){
@@ -93,8 +93,6 @@ void Player::processInputs(InputBundle &inputs) {
         } else {
             m_acceleration = glm::vec3(0.f, 0.f, 0.f);
         }
-
-        m_acceleration *= 40;
     } else {
         BlockType underPlayer = mcr_terrain.getBlockAt(m_position.x, m_position.y - 0.5, m_position.z);
         if (inputs.wPressed) {
@@ -118,8 +116,6 @@ void Player::processInputs(InputBundle &inputs) {
             m_acceleration.z = 0;
         }
 
-        m_acceleration *= 10;
-
         // Apply vertical motion
         if (underPlayer == EMPTY) {
             m_acceleration.y = -g * m_up.y;
@@ -135,7 +131,6 @@ void Player::processInputs(InputBundle &inputs) {
             }
         }
     }
-
 }
 
 void Player::computePhysics(float dT, Terrain &terrain) {
@@ -155,7 +150,7 @@ void Player::computePhysics(float dT, Terrain &terrain) {
 
     // Clamp velocity
     if (isFlight) {
-        m_velocity = glm::clamp(m_velocity, glm::vec3(-400.f, -400.f, -400.f), glm::vec3(400.f, 400.f, 50.f));
+        m_velocity = glm::clamp(m_velocity, glm::vec3(-400.f, -400.f, -400.f), glm::vec3(400.f, 400.f, 400.f));
     } else {
         m_velocity = glm::clamp(m_velocity, glm::vec3(-50.f, -200.f, -50.f), glm::vec3(50.f, 400.f, 50.f));
     }

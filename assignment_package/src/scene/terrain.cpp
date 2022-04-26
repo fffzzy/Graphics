@@ -163,13 +163,6 @@ Chunk* Terrain::instantiateChunkAt(int x, int z) {
         cPtr->linkNeighbor(chunkWest, XNEG);
     }
 
-    // Populate blocks
-    for(int i = 0; i < 16; i++){
-        for(int j = 0; j < 16; j++){
-            cPtr->setBlock(x + i, z+ j);
-        }
-    }
-
     return cPtr;
     return cPtr;
 }

@@ -93,14 +93,18 @@ public:
     void setBlock(int x, int z); // sets blocks on coordinates x,z
     virtual void destroyVBOdata() override;
     float WorleyDist(glm::vec2 uv);
-    float fbm(float x);
+    float fbm(float x, float persistence = 0.5f, int octaves = 5, float freq = 2.f, float amp = 0.5f);
     float interpNoise1D(float x);
     float noise1D(int x);
     float perlinNoise(glm::vec2 uv);
+    float perlinNoise2(glm::vec2 uv);
     float surflet(glm::vec2 P, glm::vec2 gridPoint);
+    float surflet2(glm::vec2 P, glm::vec2 gridPoint);
     float surflet3D(glm::vec3 P, glm::vec3 gridPoint);
     float perlinNoise3D(glm::vec3 uv);
-    glm::vec3 random3( glm::vec3 p );
+    float random1( glm::vec2 p );
     glm::vec2 random2( glm::vec2 p );
     void generateRiverLines(glm::vec2 p, float r, int i);
+    glm::vec2 random2_2( glm::vec2 p );
+    glm::vec3 random3( glm::vec3 p );
 };
